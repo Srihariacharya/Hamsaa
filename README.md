@@ -1,78 +1,46 @@
-# ContactPro - Full-Stack Intelligent Relationship Management System
+# Hamsaa - Advanced Business Intelligence & Relationship Management
 
-**ContactPro** is a professional-grade, full-stack Contact Management System designed for modern workflows. Built with a focus on premium aesthetics, seamless user experience, and robust data persistence, it provides everything you need to manage your professional relationships effectively.
+**Hamsaa** is an elite, professional-grade relationship intelligence suite. It is designed to modernize professional network tracking using deep ingestion architectures, predictive analytics, and premium visual components.
 
-## 🚀 Key Features
+## 🚀 Core Functionality
 
-- 📊 **Advanced Analytics**: Gain deep insights into your contact database with interactive and beautiful data visualizations.
-- 🗃️ **Smart Contact Management**: Full CRUD operations for contacts, including categorization (Clients, leads, vendors), gender profiling, and interaction scoring.
-- 🔔 **Follow-Up System**: Stay on top of your outreach with an intelligent tracking system that calculates "Overdue" and "Upcoming" contacts based on interaction history.
-- 📋 **Integrated Task Board**: Organize your operations with a powerful Kanban-style task management board (Pending, In Progress, Completed).
-- 📤 **Import/Export**: Seamlessly migrate your data with built-in vCard (.vcf) import and export functionality.
-- 🌙 **Premium Dark Mode**: A sophisticated theme designed with deep navy and indigo accents for a premium feel.
-- 👤 **Profile & Security**: Manage your professional identity and secure your account with built-in profile updates and password management.
+- 📊 **Intelligence Dashboard**: Leverage interaction algorithms that map real-time professional outreach trends.
+- 🗃️ **Network Ingestion (Sync)**: Seamlessly merge and parse underlying local device address logs securely.
+- 🔔 **Follow-Up Matrix**: Automatically tracks connection gaps to ensure consistent high-priority coverage.
+- 🌙 **Midnight Slate Theme**: Utilizes customized modern design schemas tailored with premium contrast logic.
 
-## 🛠️ Technology Stack
+## 🛠️ Integrated Ecosystem
 
-### Frontend
-- **Framework**: React 18+ (Vite)
-- **Styling**: Tailwind CSS
-- **Visualization**: Recharts
-- **Icons**: Lucide React
-- **State/Auth**: Context API & Axios
+### Mobile Client (Android)
+- **Language**: Kotlin
+- **Toolkit**: Jetpack Compose (Material 3)
+- **Networking**: Retrofit & OkHttp
+- **Concurrency**: StateFlow & Coroutines
 
-### Backend
-- **Core**: Spring Boot 3.4+
-- **Database**: PostgreSQL (Persistent)
-- **Security**: Spring Security
-- **Data Access**: Spring Data JPA (Hibernate)
-- **Mapping**: DTO-based architecture
+### Service Engine (Backend)
+- **Framework**: Spring Boot 3+ (Java)
+- **Persistence**: JPA / Hibernate
+- **Structure**: Secure DTO Mapping
 
 ## 📂 Project Structure
 
 ```text
 .
-├── Frontend/           # React + Vite application
-│   ├── src/pages/      # Dashboard, Analytics, Contacts, etc.
-│   └── src/context/    # Auth and Theme state management
-├── Backend/            # Spring Boot application
-│   ├── controller/     # REST API Endpoints
-│   ├── dto/            # Data Transfer Objects
-│   └── service/        # Business Logic layer
-└── README.md           # Main documentation
+├── ContactProApp/       # Mobile Application Client (Android Compose)
+├── Backend/             # Service Middleware Engine (Java Spring)
+└── README.md            # Execution Manual
 ```
 
-## 🚀 Getting Started
+## 🚀 Setup & Launch
 
 ### Prerequisites
-- Node.js & npm
-- Java 17+
-- PostgreSQL
+- Android Studio (Ladybug+)
+- JDK 17
+- Gradle
 
-### 1. Database Setup
-Create a PostgreSQL database named `contactpro`.
-
-### 2. Backend Setup
-```bash
-cd Backend
-# Configure your db credentials in src/main/resources/application.properties
-./mvnw spring-boot:run
-```
-
-### 3. Frontend Setup
-```bash
-cd Frontend
-npm install
-npm run dev
-```
-
-The application will be available at `http://localhost:5173`.
-
-## 🤝 Contributing
-Feel free to fork this repository and submit pull requests.
+### Execution Protocol
+1. Launch the `Backend` package locally using your preferred dependency compiler.
+2. Open the `ContactProApp` bundle in standard mobile emulation vectors.
 
 ## ✍️ Author
 **Srihari Acharya**
-
----
-Designed with ❤️ for premium productivity.
