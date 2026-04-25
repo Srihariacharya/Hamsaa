@@ -1,0 +1,3 @@
+-keep class com.contactpro.app.model.** { *; }
+-keepattributes Signature
+-keepattributes *Annotation*

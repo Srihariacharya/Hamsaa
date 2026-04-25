@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Person circle head -->
+    <path
+        android:fillColor="#4DB6AC"
+        android:pathData="M54,38 a10,10 0 1,0 0.001,0 Z" />
+    <!-- Person body -->
+    <path
+        android:fillColor="#4DB6AC"
+        android:pathData="M54,52 C42,52 32,60 32,70 L76,70 C76,60 66,52 54,52 Z" />
+</vector>
