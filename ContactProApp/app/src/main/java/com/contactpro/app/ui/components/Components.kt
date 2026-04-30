@@ -215,6 +215,8 @@ fun InputField(
             singleLine = singleLine,
             maxLines = maxLines,
             colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = TextPrimary,
+                unfocusedTextColor = TextPrimary,
                 focusedBorderColor = HamsaaPrimary,
                 unfocusedBorderColor = LightBorder,
                 errorBorderColor = Error,

@@ -44,28 +44,7 @@ class ImportViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             val contacts = withContext(Dispatchers.IO) {
                 val realContacts = readDeviceContacts(getApplication<Application>().contentResolver)
-                if (realContacts.isEmpty()) {
-                    val firstNamesM = listOf("Arjun", "Rahul", "Vikram", "Aditya", "Rohan", "Karan", "Siddharth", "Amit", "Manish", "Suresh", "Ravi", "Sanjay")
-                    val firstNamesF = listOf("Priya", "Sneha", "Ananya", "Riya", "Neha", "Pooja", "Aarti", "Kavita", "Swati", "Nidhi", "Divya", "Kriti")
-                    val lastNames = listOf("Sharma", "Verma", "Patel", "Iyer", "Nair", "Singh", "Kumar", "Gupta", "Reddy", "Joshi", "Desai", "Menon")
-                    
-                    (1..15).map { i ->
-                        val isMale = Math.random() > 0.5
-                        val firstName = if (isMale) firstNamesM.random() else firstNamesF.random()
-                        val lastName = lastNames.random()
-                        val genderStr = if (isMale) "Male" else "Female"
-                        val phoneNum = (7000000000L..9999999999L).random().toString()
-                        
-                        DeviceContact(
-                            id = "dummy_$i",
-                            name = "$firstName $lastName",
-                            phone = "+91 $phoneNum",
-                            gender = genderStr
-                        )
-                    }
-                } else {
-                    realContacts
-                }
+                realContacts
             }
             _deviceContacts.value = contacts
         }

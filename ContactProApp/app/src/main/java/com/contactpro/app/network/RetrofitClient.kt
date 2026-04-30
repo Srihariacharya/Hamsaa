@@ -8,9 +8,8 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    private const val BASE_URL = "http://10.0.2.2:8080/"
-    // Use 10.0.2.2 for Android emulator → maps to host's localhost
-    // Change to your machine's LAN IP (e.g. 192.168.x.x) for real device
+    private const val BASE_URL = "https://hamsaa.onrender.com/"
+    // Automatically points to the live Render backend
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY

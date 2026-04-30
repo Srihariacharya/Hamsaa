@@ -160,46 +160,13 @@ public class ContactService {
 
     public List<ContactResponse> getContactsByUser(Long userId) {
         List<Contact> contacts = contactRepository.findByUserId(userId);
-        if (contacts.isEmpty()) {
-            User user = userRepository.findById(userId).orElse(null);
-            if (user != null) {
-                seedDummyContacts(user);
-                contacts = contactRepository.findByUserId(userId);
-            }
-        }
+        // Contacts will naturally be empty for a new user until they sync.
         return contacts.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
-    private void seedDummyContacts(User user) {
-        String[] firstNamesM = {"Arjun", "Rahul", "Vikram", "Aditya", "Rohan", "Karan", "Siddharth", "Amit", "Manish", "Suresh", "Ravi", "Sanjay", "Deepak", "Sunil", "Vijay", "Manoj", "Rajesh", "Anil", "Ajay", "Alok"};
-        String[] firstNamesF = {"Priya", "Sneha", "Ananya", "Riya", "Neha", "Pooja", "Aarti", "Kavita", "Swati", "Nidhi", "Divya", "Kriti", "Shweta", "Megha", "Tanvi", "Isha", "Simran", "Jyoti", "Rekha", "Anita"};
-        String[] lastNames = {"Sharma", "Verma", "Patel", "Iyer", "Nair", "Singh", "Kumar", "Gupta", "Reddy", "Joshi", "Desai", "Menon", "Agarwal", "Kulkarni", "Mukherjee", "Rao", "Bose", "Chawla", "Malhotra", "Bansal"};
-        String[] categories = {"Personal", "Work", "Lead", "Vendor", "Client"};
 
-        java.util.Random random = new java.util.Random();
-        for (int i = 0; i < 20; i++) {
-            boolean isMale = random.nextBoolean();
-            String firstName = isMale ? firstNamesM[random.nextInt(firstNamesM.length)] : firstNamesF[random.nextInt(firstNamesF.length)];
-            String lastName = lastNames[random.nextInt(lastNames.length)];
-            String gender = isMale ? "Male" : "Female";
-            
-            long phoneSuffix = 7000000000L + (long)(random.nextDouble() * 2999999999L);
-            String phone = "+91 " + phoneSuffix;
-
-            Contact contact = new Contact();
-            contact.setName(firstName + " " + lastName);
-            contact.setPhone(phone);
-            contact.setEmail(firstName.toLowerCase() + "." + lastName.toLowerCase() + "@example.com");
-            contact.setCategory(categories[random.nextInt(categories.length)]);
-            contact.setGender(gender);
-            contact.setNotes("Auto-generated dummy contact");
-            contact.setFollowUpFrequency(30);
-            contact.setUser(user);
-            contactRepository.save(contact);
-        }
-    }
 
     public ContactResponse getContactById(Long contactId) {
         Contact contact = contactRepository.findById(contactId)

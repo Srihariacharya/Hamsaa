@@ -60,19 +60,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
             // Ensure labels are Week 1, Week 2, etc.
             val rawTrends = analytics?.interactionTrends ?: emptyList()
-            val trends = if (rawTrends.isEmpty()) {
-                listOf(
-                    TrendPoint("Week 1", 2),
-                    TrendPoint("Week 2", 5),
-                    TrendPoint("Week 3", 8),
-                    TrendPoint("Week 4", 2),
-                    TrendPoint("Week 5", 12),
-                    TrendPoint("Week 6", 10)
-                )
-            } else {
-                rawTrends.mapIndexed { index, point ->
-                    point.copy(name = "Week ${index + 1}")
-                }
+            val trends = rawTrends.mapIndexed { index, point ->
+                point.copy(name = "Week ${index + 1}")
             }
 
             _uiState.value = DashboardUiState(

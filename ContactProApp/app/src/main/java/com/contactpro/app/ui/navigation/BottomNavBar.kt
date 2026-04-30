@@ -78,8 +78,11 @@ fun BottomNavBar(navController: NavController) {
                 },
                 label = { 
                     Text(item.label, 
-                        fontSize = 11.sp, 
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                        fontSize = 10.sp, 
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Visible
                     ) 
                 },
                 colors = NavigationBarItemDefaults.colors(
