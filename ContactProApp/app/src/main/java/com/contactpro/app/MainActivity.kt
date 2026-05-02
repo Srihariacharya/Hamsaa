@@ -39,6 +39,10 @@ class MainActivity : ComponentActivity() {
 
                 LaunchedEffect(isLoggedIn, userId) {
                     if (startDest == null && userId != -2L) {
+                        // Load token before setting startDest
+                        val token = session.token.first()
+                        com.contactpro.app.network.RetrofitClient.authToken = token
+                        
                         startDest = if (isLoggedIn && userId > 0) Routes.CONTACTS else Routes.LOGIN
                     }
                     if (isLoggedIn && userId > 0) {

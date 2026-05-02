@@ -13,6 +13,7 @@ class SessionManager(private val context: Context) {
 
     companion object {
         val KEY_USER_ID = longPreferencesKey("user_id")
+        val KEY_TOKEN   = stringPreferencesKey("token")
         val KEY_NAME    = stringPreferencesKey("name")
         val KEY_EMAIL   = stringPreferencesKey("email")
         val KEY_PHONE   = stringPreferencesKey("phone")
@@ -33,6 +34,10 @@ class SessionManager(private val context: Context) {
         prefs[KEY_USER_ID] ?: -1L
     }
 
+    val token: Flow<String?> = context.dataStore.data.map { prefs ->
+        prefs[KEY_TOKEN]
+    }
+
     val userName: Flow<String> = context.dataStore.data.map { prefs ->
         prefs[KEY_NAME] ?: ""
     }
@@ -51,6 +56,7 @@ class SessionManager(private val context: Context) {
 
     suspend fun saveSession(
         userId: Long,
+        token: String,
         name: String,
         email: String,
         phone: String? = null,
@@ -59,6 +65,7 @@ class SessionManager(private val context: Context) {
         context.dataStore.edit { prefs ->
             prefs[KEY_LOGGED_IN] = true
             prefs[KEY_USER_ID]   = userId
+            prefs[KEY_TOKEN]     = token
             prefs[KEY_NAME]      = name
             prefs[KEY_EMAIL]     = email
             prefs[KEY_PHONE]     = phone ?: ""

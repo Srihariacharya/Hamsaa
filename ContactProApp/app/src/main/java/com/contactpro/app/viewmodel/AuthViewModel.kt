@@ -29,7 +29,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             _loginState.value = result
             if (result is ApiResult.Success) {
                 val d = result.data
-                session.saveSession(d.userId, d.name, d.email, d.phone, d.company)
+                session.saveSession(d.userId, d.token, d.name, d.email, d.phone, d.company)
+                RetrofitClient.authToken = d.token
             }
         }
     }

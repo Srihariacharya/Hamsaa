@@ -1,6 +1,7 @@
 package com.contactpro.contactpro.service;
 
 import com.contactpro.contactpro.exception.InvalidCredentialsException;
+import com.contactpro.contactpro.security.JwtUtils;
 import org.springframework.stereotype.Service;
 import com.contactpro.contactpro.repository.UserRepository;
 import com.contactpro.contactpro.model.User;
@@ -18,10 +19,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtils = jwtUtils;
     }
 
     private UserResponse mapToResponse(User user) {
@@ -51,8 +54,11 @@ public class UserService {
             throw new InvalidCredentialsException("Invalid email or password");
         }
 
+        String token = jwtUtils.generateToken(user.getEmail(), user.getId());
+
         return new LoginResponse(
                 "Login successful",
+                token,
                 user.getId(),
                 user.getEmail(),
                 user.getName(),
