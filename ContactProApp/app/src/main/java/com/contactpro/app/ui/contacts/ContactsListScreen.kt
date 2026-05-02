@@ -37,6 +37,9 @@ fun ContactsListScreen(
     val contactsRaw by vm.contacts.collectAsState()
     val searchQuery by vm.searchQuery.collectAsState()
 
+    val selectedIds = remember { mutableStateListOf<Long>() }
+    var isSelectionMode by remember { mutableStateOf(false) }
+
     LaunchedEffect(userId) { vm.loadContacts(userId) }
 
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -47,25 +50,59 @@ fun ContactsListScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text("Contacts", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                        if (contactsRaw is ApiResult.Success) {
-                            val count = (contactsRaw as ApiResult.Success).data.size
-                            Text("$count contacts", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (isSelectionMode) {
+                        Text("${selectedIds.size} selected", style = MaterialTheme.typography.titleLarge)
+                    } else {
+                        Column {
+                            Text("Contacts", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                            if (contactsRaw is ApiResult.Success) {
+                                val count = (contactsRaw as ApiResult.Success).data.size
+                                Text("$count contacts", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
                         }
                     }
                 },
                 actions = {
                     val context = androidx.compose.ui.platform.LocalContext.current
                     val scope = rememberCoroutineScope()
-                    IconButton(onClick = onImport) {
-                        Icon(Icons.Outlined.CloudUpload, "Import", tint = MaterialTheme.colorScheme.primary)
-                    }
-                    IconButton(onClick = { 
-                        vm.loadContacts(userId)
-                        scope.launch { com.contactpro.app.SyncManager.syncRecentCalls(context, userId) }
-                    }) {
-                        Icon(Icons.Outlined.Refresh, "Refresh", tint = MaterialTheme.colorScheme.primary)
+                    
+                    if (isSelectionMode) {
+                        IconButton(onClick = {
+                            if (selectedIds.size == contacts.size) {
+                                selectedIds.clear()
+                            } else {
+                                selectedIds.clear()
+                                selectedIds.addAll(contacts.map { it.id })
+                            }
+                        }) {
+                            Icon(if (selectedIds.size == contacts.size) Icons.Default.Deselect else Icons.Default.SelectAll, "Select All")
+                        }
+                        IconButton(onClick = {
+                            vm.deleteContactsBatch(selectedIds.toList(), userId)
+                            selectedIds.clear()
+                            isSelectionMode = false
+                        }) {
+                            Icon(Icons.Default.Delete, "Delete", tint = Error)
+                        }
+                        IconButton(onClick = { 
+                            isSelectionMode = false
+                            selectedIds.clear()
+                        }) {
+                            Icon(Icons.Default.Close, "Cancel")
+                        }
+                    } else {
+                        IconButton(onClick = { isSelectionMode = true }) {
+                            Icon(Icons.Default.EditNotifications, "Select", tint = MaterialTheme.colorScheme.primary)
+                        }
+                        IconButton(onClick = onImport) {
+                            Icon(Icons.Outlined.CloudUpload, "Import", tint = MaterialTheme.colorScheme.primary)
+                        }
+                        IconButton(onClick = { 
+                            vm.loadContacts(userId)
+                            scope.launch { com.contactpro.app.SyncManager.syncRecentCalls(context, userId) }
+                        }) {
+                            Icon(Icons.Outlined.Refresh, "Refresh", tint = MaterialTheme.colorScheme.primary)
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -168,11 +205,30 @@ fun ContactsListScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(displayList, key = { it.id }) { contact ->
-                                ContactCard(
-                                    contact         = contact,
-                                    onClick         = { onContactClick(contact.id) },
-                                    onFavoriteClick = { vm.toggleFavorite(contact.id, userId) }
-                                )
+                                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                    if (isSelectionMode) {
+                                        Checkbox(
+                                            checked = selectedIds.contains(contact.id),
+                                            onCheckedChange = { 
+                                                if (it) selectedIds.add(contact.id) else selectedIds.remove(contact.id)
+                                            },
+                                            colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
+                                        )
+                                    }
+                                    ContactCard(
+                                        contact         = contact,
+                                        modifier        = Modifier.weight(1f),
+                                        onClick         = { 
+                                            if (isSelectionMode) {
+                                                if (selectedIds.contains(contact.id)) selectedIds.remove(contact.id)
+                                                else selectedIds.add(contact.id)
+                                            } else {
+                                                onContactClick(contact.id)
+                                            }
+                                        },
+                                        onFavoriteClick = { if (!isSelectionMode) vm.toggleFavorite(contact.id, userId) }
+                                    )
+                                }
                             }
                         }
                     }

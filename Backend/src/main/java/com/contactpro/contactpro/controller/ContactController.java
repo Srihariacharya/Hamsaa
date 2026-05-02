@@ -33,6 +33,12 @@ public class ContactController {
         return contactService.createContactsBatch(requests);
     }
 
+    @PostMapping("/batch-delete")
+    public String deleteContactsBatch(@RequestBody List<Long> contactIds, @Query("userId") Long userId) {
+        contactService.deleteContactsBatch(contactIds, userId);
+        return "Batch delete successful for " + contactIds.size() + " contacts";
+    }
+
     /*
      * Get contacts of user
      */

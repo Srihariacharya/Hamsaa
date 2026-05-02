@@ -29,6 +29,10 @@ class ContactRepository(private val api: ApiService) {
         api.deleteContact(contactId, userId)
     }
 
+    suspend fun deleteContactsBatch(contactIds: List<Long>, userId: Long): ApiResult<String> = safeCall {
+        api.deleteContactsBatch(contactIds, userId)
+    }
+
     suspend fun getContactById(contactId: Long): ApiResult<ContactResponse> = safeCall {
         api.getContactById(contactId)
     }

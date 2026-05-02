@@ -48,6 +48,12 @@ interface ApiService {
         @Query("userId") userId: Long
     ): Response<String>
 
+    @POST("api/contacts/batch-delete")
+    suspend fun deleteContactsBatch(
+        @Body contactIds: List<Long>,
+        @Query("userId") userId: Long
+    ): Response<String>
+
     @GET("api/contacts/{contactId}")
     suspend fun getContactById(@Path("contactId") contactId: Long): Response<ContactResponse>
 

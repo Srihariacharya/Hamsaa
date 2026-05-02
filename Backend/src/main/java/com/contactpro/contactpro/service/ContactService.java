@@ -327,4 +327,11 @@ public class ContactService {
         }
         contactRepository.delete(contact);
     }
+
+    @Transactional
+    public void deleteContactsBatch(List<Long> contactIds, Long userId) {
+        for (Long id : contactIds) {
+            deleteContact(id, userId);
+        }
+    }
 }

@@ -84,6 +84,17 @@ class ContactViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun deleteContactsBatch(contactIds: List<Long>, userId: Long) {
+        viewModelScope.launch {
+            _deleteState.value = ApiResult.Loading
+            val result = repo.deleteContactsBatch(contactIds, userId)
+            _deleteState.value = result
+            if (result is ApiResult.Success) {
+                loadContacts(userId)
+            }
+        }
+    }
+
     fun toggleFavorite(contactId: Long, userId: Long) {
         viewModelScope.launch {
             // Optimistic update for detail
