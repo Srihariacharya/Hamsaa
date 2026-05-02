@@ -157,7 +157,9 @@ fun DashboardScreen(
                     SectionHeader("Intelligence Feed")
                     state.mostContacted.forEach { contact ->
                         Card(
-                            modifier = Modifier.fillMaxWidth().clickable { onContactClick(contact.id) },
+                            modifier = Modifier.fillMaxWidth().clickable { 
+                                if (contact.id > 0) onContactClick(contact.id) 
+                            },
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             shape = RoundedCornerShape(20.dp),
                             border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
@@ -296,7 +298,8 @@ fun TrendChart(trends: List<com.contactpro.app.model.TrendPoint>) {
                     }
                     Spacer(Modifier.height(4.dp))
                     Text("${point.value}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                    Text(point.name, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                    val label = if (point.name.startsWith("Week")) point.name.replace("Week ", "W") else point.name
+                    Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
                 }
             }
         }
