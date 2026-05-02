@@ -35,9 +35,11 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/api/integrations/google/auth-url",
                                 "/api/integrations/google/callback",
-                                "/api/auth/**",
+                                "/api/auth/login",
+                                "/api/auth/register",
                                 "/api/ping"
                         ).permitAll()
+                        .requestMatchers("/api/auth/profile/**").authenticated()
                         .requestMatchers("/api/contacts/**").authenticated()
                         .requestMatchers("/api/interactions/**").authenticated()
                         .requestMatchers("/api/analytics/**").authenticated()
