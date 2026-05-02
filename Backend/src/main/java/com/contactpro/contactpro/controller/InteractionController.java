@@ -23,13 +23,12 @@ import java.util.List;
 public class InteractionController {
 
     private final InteractionService interactionService;
+    private final com.contactpro.contactpro.repository.InteractionRepository interactionRepository;
 
-    /*
-     * Constructor Injection
-     * Spring automatically injects InteractionService.
-     */
-    public InteractionController(InteractionService interactionService) {
+    public InteractionController(InteractionService interactionService,
+                                 com.contactpro.contactpro.repository.InteractionRepository interactionRepository) {
         this.interactionService = interactionService;
+        this.interactionRepository = interactionRepository;
     }
 
     /*
@@ -63,7 +62,17 @@ public class InteractionController {
     @GetMapping("/contact/{contactId}")
     public List<InteractionResponse> getInteractionsByContact(
             @PathVariable Long contactId) {
-
         return interactionService.getInteractionsByContact(contactId);
+    }
+
+    /**
+     * One-time cleanup: deletes all interactions with corrupted duration > 120 min.
+     * Call this once after deploying to clean the database.
+     * DELETE /api/interactions/cleanup/{userId}
+     */
+    @DeleteMapping("/cleanup/{userId}")
+    public String cleanupCorruptedInteractions(@PathVariable Long userId) {
+        interactionRepository.deleteCorruptedInteractions(userId, 120);
+        return "Cleanup complete for userId=" + userId;
     }
 }

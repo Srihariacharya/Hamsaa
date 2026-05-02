@@ -99,6 +99,9 @@ interface ApiService {
     @GET("api/interactions/contact/{contactId}")
     suspend fun getInteractions(@Path("contactId") contactId: Long): Response<List<InteractionResponse>>
 
+    @DELETE("api/interactions/cleanup/{userId}")
+    suspend fun cleanupCorruptedInteractions(@Path("userId") userId: Long): Response<String>
+
     // ── Analytics ─────────────────────────────────────────────────────────────
 
     @GET("api/analytics/user/{userId}")

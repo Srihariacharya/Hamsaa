@@ -67,18 +67,24 @@ class FollowUpViewModel : ViewModel() {
             }
 
             val lastDate = sdf.parse(lastDateStr) ?: return@forEach
-            val calendar = Calendar.getInstance()
-            calendar.time = lastDate
-            calendar.add(Calendar.DAY_OF_YEAR, contact.followUpFrequency)
-            val nextDate = calendar.time
+            
+            // Normalize lastDate to midnight to avoid hour-based errors
+            val lastCal = Calendar.getInstance()
+            lastCal.time = lastDate
+            lastCal.set(Calendar.HOUR_OF_DAY, 0)
+            lastCal.set(Calendar.MINUTE, 0)
+            lastCal.set(Calendar.SECOND, 0)
+            lastCal.set(Calendar.MILLISECOND, 0)
+            lastCal.add(Calendar.DAY_OF_YEAR, contact.followUpFrequency)
+            val nextDate = lastCal.time
 
             val diffMillis = nextDate.time - now.time
             val diffDays = TimeUnit.MILLISECONDS.toDays(diffMillis)
 
             when {
-                diffDays < 0 -> overdue.add(contact)
-                diffDays == 0L -> today.add(contact)
-                diffDays in 1..7 -> thisWeek.add(contact)
+                diffDays < -1 -> overdue.add(contact)   // more than 1 day past due
+                diffDays <= 1 -> today.add(contact)     // due today or within 1 day (catches rounding)
+                diffDays in 2..7 -> thisWeek.add(contact)
                 else -> upcoming.add(contact)
             }
         }

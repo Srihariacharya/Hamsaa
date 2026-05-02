@@ -248,7 +248,7 @@ fun TrendChart(trends: List<com.contactpro.app.model.TrendPoint>) {
                         )
                     }
                     Spacer(Modifier.height(4.dp))
-                    Text("${point.value}m", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                    Text("${point.value}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                     Text(point.name, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
                 }
             }

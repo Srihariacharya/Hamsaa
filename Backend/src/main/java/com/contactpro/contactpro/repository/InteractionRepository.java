@@ -51,4 +51,9 @@ GROUP BY i.contact.id
 
     @Query("SELECT SUM(i.duration) FROM Interaction i WHERE i.contact.user.id = :userId")
     Integer getTotalDurationByUserId(Long userId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("DELETE FROM Interaction i WHERE i.contact.user.id = :userId AND i.duration > :maxDuration")
+    void deleteCorruptedInteractions(Long userId, int maxDuration);
 }

@@ -46,19 +46,19 @@ public class AnalyticsService {
             LocalDate weekStart = now.minusDays(now.getDayOfWeek().getValue() - 1).minusWeeks(i);
             LocalDate weekEnd = weekStart.plusDays(6);
             
-            long weekDuration = 0;
+            long weekCount = 0; // Count of interactions this week
             for (com.contactpro.contactpro.model.Interaction interaction : interactions) {
                 if (interaction.getInteractionDate() != null) {
                     LocalDate interactionDate = interaction.getInteractionDate().toLocalDate();
                     if (!interactionDate.isBefore(weekStart) && !interactionDate.isAfter(weekEnd)) {
-                        weekDuration += (interaction.getDuration() != null ? interaction.getDuration() : 0);
+                        weekCount++; // Count interactions, not duration
                     }
                 }
             }
             
             Map<String, Object> point = new HashMap<>();
             point.put("name", "Week " + (6-i));
-            point.put("value", weekDuration); // Actual duration in minutes (since Android sends converted minutes)
+            point.put("value", weekCount); // Count of interactions per week
             trends.add(point);
         }
         response.setInteractionTrends(trends);

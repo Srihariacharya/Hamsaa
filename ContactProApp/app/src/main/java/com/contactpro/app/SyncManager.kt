@@ -27,6 +27,13 @@ object SyncManager {
                 val contactRepo = ContactRepository(RetrofitClient.apiService)
                 val interactionRepo = InteractionRepository(RetrofitClient.apiService)
                 
+                // Step 0: Clean up corrupted interactions (duration > 120 min from old sync bug)
+                try {
+                    RetrofitClient.apiService.cleanupCorruptedInteractions(userId)
+                } catch (e: Exception) {
+                    Log.w("SyncManager", "Cleanup call failed, continuing", e)
+                }
+                
                 // 1. Fetch all backend contacts for user
                 val result = contactRepo.getContacts(userId)
                 val backendContacts = if (result is ApiResult.Success) result.data else emptyList()
