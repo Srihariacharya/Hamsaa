@@ -57,7 +57,12 @@ fun DashboardScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { vm.loadDashboard(userId) }) {
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    val scope = rememberCoroutineScope()
+                    IconButton(onClick = { 
+                        vm.loadDashboard(userId)
+                        scope.launch { com.contactpro.app.SyncManager.syncRecentCalls(context, userId) }
+                    }) {
                         Icon(Icons.Outlined.Refresh, "Refresh", tint = MaterialTheme.colorScheme.primary)
                     }
                 },

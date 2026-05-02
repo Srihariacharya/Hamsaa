@@ -100,11 +100,8 @@ class ImportViewModel(application: Application) : AndroidViewModel(application) 
                     val savedContacts = batchResult.data
                     count += savedContacts.size
                     
-                    // Step 3: Sync history for each successfully saved contact in this chunk
-                    savedContacts.forEach { savedContact ->
-                        // The phone number matched the original device contact
-                        syncHistoryForContact(savedContact.id, savedContact.phone)
-                    }
+                    // Step 3: We no longer sync history here to prevent timeouts with 15,000 contacts.
+                    // Background sync (SyncManager) will handle this automatically on next app open.
                 }
             }
             

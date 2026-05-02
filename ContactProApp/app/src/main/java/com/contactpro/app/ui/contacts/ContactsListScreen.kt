@@ -55,10 +55,15 @@ fun ContactsListScreen(
                     }
                 },
                 actions = {
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    val scope = rememberCoroutineScope()
                     IconButton(onClick = onImport) {
                         Icon(Icons.Outlined.CloudUpload, "Import", tint = MaterialTheme.colorScheme.primary)
                     }
-                    IconButton(onClick = { vm.loadContacts(userId) }) {
+                    IconButton(onClick = { 
+                        vm.loadContacts(userId)
+                        scope.launch { com.contactpro.app.SyncManager.syncRecentCalls(context, userId) }
+                    }) {
                         Icon(Icons.Outlined.Refresh, "Refresh", tint = MaterialTheme.colorScheme.primary)
                     }
                 },

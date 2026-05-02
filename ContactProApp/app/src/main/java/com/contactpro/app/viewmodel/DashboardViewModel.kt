@@ -51,12 +51,22 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             val analytics = (analyticsResult as? ApiResult.Success)?.data
             val contacts  = (contactsResult  as? ApiResult.Success)?.data ?: emptyList()
 
-            // Sort contacts by last interaction date to determine most/inactive
-            val sorted = contacts.sortedByDescending { it.lastInteractionDate }
-            val mostContacted = sorted.take(5)
-            val inactive = contacts
-                .filter { it.lastInteractionDate == null || it.followUpFrequency > 0 }
-                .take(10)
+            // Priority Attention: Calculate who is most overdue
+            val now = System.currentTimeMillis()
+            val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            
+            val inactive = contacts.filter { contact ->
+                val lastInteraction = contact.lastInteractionDate?.take(10)?.let {
+                    try { sdf.parse(it)?.time } catch (e: Exception) { null }
+                } ?: 0L
+                
+                if (lastInteraction == 0L) return@filter true // No history needs attention
+                
+                val frequencyMillis = contact.followUpFrequency.toLong() * 24 * 60 * 60 * 1000L
+                (now - lastInteraction) > frequencyMillis
+            }.sortedBy { contact ->
+                contact.lastInteractionDate ?: "" // Show oldest interactions first
+            }.take(10)
 
             // Ensure labels are Week 1, Week 2, etc.
             val rawTrends = analytics?.interactionTrends ?: emptyList()

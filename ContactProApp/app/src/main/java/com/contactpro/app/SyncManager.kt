@@ -46,35 +46,29 @@ object SyncManager {
                 
                 logs.forEach { log ->
                     val logDate = log.date
-                    // Match by last 10 digits for global compatibility
-                    val normalizedLogNum = log.number.filter { it.isDigit() }.takeLast(10)
-                    if (normalizedLogNum.isEmpty()) return@forEach
+                    // Better normalization: filter all non-digits and take last 10
+                    val logNum = log.number.filter { it.isDigit() }.takeLast(10)
+                    if (logNum.isEmpty()) return@forEach
                     
                     val contact = backendContacts.find { 
-                        it.phone.filter { char -> char.isDigit() }.takeLast(10) == normalizedLogNum 
+                        it.phone.filter { char -> char.isDigit() }.takeLast(10) == logNum 
                     } ?: return@forEach
                     
-                    // CRITICAL: Only sync if this call is NEWER than the last interaction on backend
-                    val lastInteractionDate = contact.lastInteractionDate?.let {
-                        try { sdf.parse(it) } catch (e: Exception) { 
-                            try { sdfShort.parse(it) } catch (e: Exception) { null }
+                    val lastInteractionTime = contact.lastInteractionDate?.let {
+                        try { sdf.parse(it)?.time } catch (e: Exception) { 
+                            try { sdfShort.parse(it)?.time } catch (e: Exception) { null }
                         }
-                    }?.time ?: 0L
+                    } ?: 0L
                     
-                    if (logDate <= lastInteractionDate) return@forEach
-                    
-                    val type = when (log.type) {
-                        CallLog.Calls.INCOMING_TYPE -> "CALL"
-                        CallLog.Calls.OUTGOING_TYPE -> "CALL"
-                        else -> "CALL"
-                    }
+                    // ONLY sync if the call happened AFTER the last interaction we have on record
+                    if (logDate <= lastInteractionTime) return@forEach
                     
                     val dateStr = sdf.format(Date(logDate))
                     val durationMinutes = if (log.duration > 0L) (log.duration / 60L).coerceAtLeast(1L) else 0L
                     
                     interactionRepo.createInteraction(
                         InteractionRequest(
-                            type = type,
+                            type = "CALL",
                             notes = "Sync call: ${if (log.type == CallLog.Calls.OUTGOING_TYPE) "Outgoing" else "Incoming"}",
                             duration = durationMinutes,
                             contactId = contact.id,
