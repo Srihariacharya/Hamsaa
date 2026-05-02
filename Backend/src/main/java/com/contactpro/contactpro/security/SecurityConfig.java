@@ -37,15 +37,14 @@ public class SecurityConfig {
                                 "/api/integrations/google/callback",
                                 "/api/auth/login",
                                 "/api/auth/register",
-                                "/api/ping"
-                        ).permitAll()
+                                "/api/ping")
+                        .permitAll()
                         .requestMatchers("/api/auth/profile/**").authenticated()
                         .requestMatchers("/api/contacts/**").authenticated()
                         .requestMatchers("/api/interactions/**").authenticated()
                         .requestMatchers("/api/analytics/**").authenticated()
                         .requestMatchers("/api/tasks/**").authenticated()
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

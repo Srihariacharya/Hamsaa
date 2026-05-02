@@ -57,13 +57,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             // Priority Attention: Calculate who is most overdue
             val now = System.currentTimeMillis()
             val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-            
             val inactive = contacts.filter { contact ->
                 val lastInteraction = contact.lastInteractionDate?.take(10)?.let {
                     try { sdf.parse(it)?.time } catch (e: Exception) { null }
                 } ?: 0L
                 
-                if (lastInteraction == 0L) return@filter true // No history needs attention
+                if (lastInteraction == 0L) return@filter false // Ignore contacts with zero history
                 
                 val frequencyMillis = contact.followUpFrequency.toLong() * 24 * 60 * 60 * 1000L
                 (now - lastInteraction) > frequencyMillis

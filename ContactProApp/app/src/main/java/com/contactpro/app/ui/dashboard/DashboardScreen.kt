@@ -119,7 +119,7 @@ fun DashboardScreen(
                         modifier = Modifier.weight(1f)
                     )
                     ProfessionalStatCard(
-                        label = "Avg Interaction",
+                        label = "Total Engagement",
                         value = "${"%.1f".format(state.avgDuration)}m",
                         icon  = Icons.Outlined.Timer,
                         color = Info,

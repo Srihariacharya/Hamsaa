@@ -142,14 +142,16 @@ fun InteractionCard(interaction: InteractionResponse, modifier: Modifier = Modif
                 interaction.notes?.let {
                     Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
                 }
+                val dateStr = interaction.interactionDate.replace("T", " ")
+                    .substringBeforeLast(":") // Hide seconds
                 Text(
-                    interaction.interactionDate.substringBefore("T"),
+                    dateStr,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )
             }
             interaction.duration?.let {
-                Text("${it}m", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
+                Text("${it}s", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
             }
         }
     }

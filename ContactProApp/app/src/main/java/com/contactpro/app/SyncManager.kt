@@ -76,13 +76,17 @@ object SyncManager {
                     if (logDate <= lastInteractionTime) return@forEach
                     
                     val dateStr = sdf.format(Date(logDate))
-                    val durationMinutes = if (log.duration > 0L) (log.duration / 60L).coerceAtLeast(1L) else 0L
+                    val timeStr = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(logDate))
+                    
+                    // Use raw seconds for higher precision. 
+                    // Safety cap: Never sync a call longer than 7200 seconds (2 hours).
+                    val durationSeconds = log.duration.coerceAtMost(7200L)
                     
                     interactionRepo.createInteraction(
                         InteractionRequest(
                             type = "CALL",
-                            notes = "Sync call: ${if (log.type == CallLog.Calls.OUTGOING_TYPE) "Outgoing" else "Incoming"}",
-                            duration = durationMinutes,
+                            notes = "Sync call: ${if (log.type == CallLog.Calls.OUTGOING_TYPE) "Outgoing" else "Incoming"} at $timeStr",
+                            duration = durationSeconds,
                             contactId = contact.id,
                             interactionDate = dateStr
                         )
@@ -110,8 +114,7 @@ object SyncManager {
                 val durIdx  = it.getColumnIndexOrThrow(CallLog.Calls.DURATION)
                 val typeIdx = it.getColumnIndexOrThrow(CallLog.Calls.TYPE)
                 val dateIdx = it.getColumnIndexOrThrow(CallLog.Calls.DATE)
-                var count   = 0
-                while (it.moveToNext() && count < 20) { // Only check latest 20 to save backend hits
+                while (it.moveToNext()) { // Sync ALL available history
                     result.add(
                         CallLogEntryBasic(
                             number   = it.getString(numIdx) ?: "",

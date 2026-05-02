@@ -33,7 +33,7 @@ public class AnalyticsService {
         long activeContacts = contactRepository.countByUserId(userId);
 
         response.setTotalInteractions(totalInteractions);
-        response.setAvgDuration(totalInteractions > 0 ? (double) (totalDuration != null ? totalDuration : 0) / totalInteractions : 0);
+        response.setAvgDuration(totalDuration != null ? (double) totalDuration / 60.0 : 0.0); // Now represents Total Minutes
         response.setTaskCompletionRate(totalTasks > 0 ? (double) completedTasks / totalTasks * 100 : 0);
         response.setActiveContacts(activeContacts);
 

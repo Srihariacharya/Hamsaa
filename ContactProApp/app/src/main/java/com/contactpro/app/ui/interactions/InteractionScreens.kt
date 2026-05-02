@@ -130,7 +130,7 @@ fun AddInteractionScreen(
                 InputField(
                     value         = duration,
                     onValueChange = { duration = it },
-                    label         = "Duration (minutes)",
+                    label         = "Duration (seconds)",
                     leadingIcon   = Icons.Outlined.Timer,
                     keyboardType  = androidx.compose.ui.text.input.KeyboardType.Number
                 )
