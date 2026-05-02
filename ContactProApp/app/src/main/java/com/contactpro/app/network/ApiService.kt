@@ -102,6 +102,9 @@ interface ApiService {
     @DELETE("api/interactions/cleanup/{userId}")
     suspend fun cleanupCorruptedInteractions(@Path("userId") userId: Long): Response<String>
 
+    @DELETE("api/interactions/reset/{userId}")
+    suspend fun resetInteractions(@Path("userId") userId: Long): Response<String>
+
     @DELETE("api/contacts/deduplicate/{userId}")
     suspend fun deduplicateContacts(@Path("userId") userId: Long): Response<String>
 

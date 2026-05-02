@@ -60,6 +60,20 @@ fun DashboardScreen(
                 actions = {
                     val context = androidx.compose.ui.platform.LocalContext.current
                     val scope = rememberCoroutineScope()
+                    
+                    IconButton(onClick = { 
+                        scope.launch {
+                            try {
+                                RetrofitClient.apiService.resetInteractions(userId)
+                                vm.loadDashboard(userId)
+                                com.contactpro.app.SyncManager.syncRecentCalls(context, userId)
+                                vm.loadDashboard(userId)
+                            } catch (e: Exception) {}
+                        }
+                    }) {
+                        Icon(Icons.Outlined.DeleteSweep, "Reset Intelligence", tint = Error)
+                    }
+
                     IconButton(onClick = { 
                         vm.loadDashboard(userId)
                         scope.launch { com.contactpro.app.SyncManager.syncRecentCalls(context, userId) }

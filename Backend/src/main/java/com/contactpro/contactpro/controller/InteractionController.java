@@ -75,4 +75,16 @@ public class InteractionController {
         interactionRepository.deleteCorruptedInteractions(userId, 120);
         return "Cleanup complete for userId=" + userId;
     }
+
+    /**
+     * Hard Reset: deletes ALL interactions for a user.
+     * DELETE /api/interactions/reset/{userId}
+     */
+    @DeleteMapping("/reset/{userId}")
+    @org.springframework.transaction.annotation.Transactional
+    public String resetInteractions(@PathVariable Long userId) {
+        List<com.contactpro.contactpro.model.Interaction> interactions = interactionRepository.findByContactUserId(userId);
+        interactionRepository.deleteAll(interactions);
+        return "Reset complete. All intelligence logs deleted for userId=" + userId;
+    }
 }
