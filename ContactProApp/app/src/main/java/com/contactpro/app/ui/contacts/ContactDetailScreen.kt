@@ -218,7 +218,7 @@ fun ContactDetailScreen(
                         SectionHeader("Linked Reminders", modifier = Modifier.padding(horizontal = 24.dp))
                         Card(
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp),
-                            colors = CardDefaults.cardColors(containerColor = LightSurface),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
                             shape = RoundedCornerShape(20.dp),
                             border = BorderStroke(0.5.dp, LightBorder.copy(alpha = 0.5f)),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)

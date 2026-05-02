@@ -41,24 +41,35 @@ object SyncManager {
                 // 2. Fetch recent call logs (last 50 to cover any new ones since app was last open)
                 val logs = readCallLogs(context)
                 
-                // We only want to upload calls that happen after the contact's lastInteractionDate
-                // For a true bulletproof sync, we would check Interaction table, but checking date is a good heuristic
                 val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                val sdfShort = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                 
                 logs.forEach { log ->
-                    val normalizedNum = log.number.replace("\\s".toRegex(), "")
-                    val contactId = phoneToId[normalizedNum] ?: return@forEach
+                    val logDate = log.date
+                    // Match by last 10 digits for global compatibility
+                    val normalizedLogNum = log.number.filter { it.isDigit() }.takeLast(10)
+                    if (normalizedLogNum.isEmpty()) return@forEach
+                    
+                    val contact = backendContacts.find { 
+                        it.phone.filter { char -> char.isDigit() }.takeLast(10) == normalizedLogNum 
+                    } ?: return@forEach
+                    
+                    // CRITICAL: Only sync if this call is NEWER than the last interaction on backend
+                    val lastInteractionDate = contact.lastInteractionDate?.let {
+                        try { sdf.parse(it) } catch (e: Exception) { 
+                            try { sdfShort.parse(it) } catch (e: Exception) { null }
+                        }
+                    }?.time ?: 0L
+                    
+                    if (logDate <= lastInteractionDate) return@forEach
                     
                     val type = when (log.type) {
                         CallLog.Calls.INCOMING_TYPE -> "CALL"
                         CallLog.Calls.OUTGOING_TYPE -> "CALL"
-                        CallLog.Calls.MISSED_TYPE -> "CALL"
                         else -> "CALL"
                     }
                     
-                    val dateStr = sdf.format(Date(log.date))
-                    
-                    // Call Duration Mathematics: Divide Android's seconds by 60 to get minutes
+                    val dateStr = sdf.format(Date(logDate))
                     val durationMinutes = if (log.duration > 0L) (log.duration / 60L).coerceAtLeast(1L) else 0L
                     
                     interactionRepo.createInteraction(
@@ -66,7 +77,7 @@ object SyncManager {
                             type = type,
                             notes = "Sync call: ${if (log.type == CallLog.Calls.OUTGOING_TYPE) "Outgoing" else "Incoming"}",
                             duration = durationMinutes,
-                            contactId = contactId,
+                            contactId = contact.id,
                             interactionDate = dateStr
                         )
                     )

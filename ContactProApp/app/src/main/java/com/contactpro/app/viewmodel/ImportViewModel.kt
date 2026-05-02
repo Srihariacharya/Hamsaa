@@ -142,15 +142,17 @@ class ImportViewModel(application: Application) : AndroidViewModel(application) 
         if (maleNames.contains(firstName)) return "Male"
         if (femaleNames.contains(firstName)) return "Female"
         
-        // Universal structural rules
-        if (firstName.endsWith("a") || firstName.endsWith("ita") || firstName.endsWith("ina") || firstName.endsWith("iya") || firstName.endsWith("ani")) {
-            return "Female" // Many global names ending in 'a' are female (Maria, Anna, Priya, Julia)
-        }
-        
-        if (firstName.endsWith("o") || firstName.endsWith("us") || firstName.endsWith("ish")) {
-            return "Male" // E.g., Marco, Julio, Marcus, Manish
-        }
-        
+        // Female patterns (global heuristics)
+        if (firstName.endsWith("a") || firstName.endsWith("ita") || firstName.endsWith("ina") || 
+            firstName.endsWith("iya") || firstName.endsWith("ani") || firstName.endsWith("ee") || 
+            firstName.endsWith("ni") || firstName.endsWith("ma")) return "Female"
+            
+        // Male patterns (global heuristics)
+        if (firstName.endsWith("o") || firstName.endsWith("us") || firstName.endsWith("ish") || 
+            firstName.endsWith("ul") || firstName.endsWith("an") || firstName.endsWith("it") || 
+            firstName.endsWith("sh") || firstName.endsWith("ra") || firstName.endsWith("th") || 
+            firstName.endsWith("nd") || firstName.endsWith("ej") || firstName.endsWith("iv")) return "Male"
+            
         return "Prefer not to say" // Safe fallback
     }
 

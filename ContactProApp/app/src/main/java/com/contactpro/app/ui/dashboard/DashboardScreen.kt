@@ -58,7 +58,7 @@ fun DashboardScreen(
                 },
                 actions = {
                     IconButton(onClick = { vm.loadDashboard(userId) }) {
-                        Icon(Icons.Outlined.Refresh, "Refresh", tint = HamsaaPrimary)
+                        Icon(Icons.Outlined.Refresh, "Refresh", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -152,9 +152,9 @@ fun DashboardScreen(
                                 Spacer(Modifier.width(16.dp))
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(contact.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-                                    Text(getInactiveDaysText(contact), style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                                    Text(getInactiveDaysText(contact), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
-                                Icon(Icons.Outlined.ArrowForward, null, tint = TextHint, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Outlined.ArrowForward, null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), modifier = Modifier.size(16.dp))
                             }
                         }
                     }

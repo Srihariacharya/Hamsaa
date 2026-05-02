@@ -107,7 +107,7 @@ fun AddInteractionScreen(
                             selectedContainerColor = HamsaaPrimary,
                             selectedLabelColor = Color.White,
                             selectedLeadingIconColor = Color.White,
-                            containerColor = LightSurface,
+                            containerColor = MaterialTheme.colorScheme.surface,
                             labelColor = TextSecondary,
                             iconColor = TextHint
                         )

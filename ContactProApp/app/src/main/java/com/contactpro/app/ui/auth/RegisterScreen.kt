@@ -94,15 +94,15 @@ fun RegisterScreen(
                 )
                 Spacer(Modifier.height(16.dp))
                 Text("Join Hamsaa", style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.ExtraBold, color = HamsaaPrimary, letterSpacing = 2.sp)
+                    fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary, letterSpacing = 2.sp)
                 Text("Precision Network Intelligence", style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary, textAlign = TextAlign.Center)
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f), textAlign = TextAlign.Center)
 
                 Spacer(Modifier.height(32.dp))
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors   = CardDefaults.cardColors(containerColor = LightSurface),
+                    colors   = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     shape    = RoundedCornerShape(24.dp),
                     border   = BorderStroke(0.5.dp, LightBorder.copy(alpha = 0.5f)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -149,9 +149,9 @@ fun RegisterScreen(
 
                 Spacer(Modifier.height(24.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Already have an account?", color = TextSecondary)
+                    Text("Already have an account?", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f))
                     TextButton(onClick = onNavigateToLogin) {
-                        Text("Sign In", fontWeight = FontWeight.Bold, color = HamsaaPrimary)
+                        Text("Sign In", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
                 }
             }

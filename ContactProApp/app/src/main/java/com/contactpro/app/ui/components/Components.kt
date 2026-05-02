@@ -104,7 +104,7 @@ fun ContactCard(
                     Icon(
                         imageVector = if (contact.isFavorite) Icons.Filled.Star else Icons.Outlined.Star,
                         contentDescription = "Favorite",
-                        tint = if (contact.isFavorite) Color(0xFFFFB300) else TextHint,
+                        tint = if (contact.isFavorite) Color(0xFFFFB300) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -116,17 +116,17 @@ fun ContactCard(
 @Composable
 fun InteractionCard(interaction: InteractionResponse, modifier: Modifier = Modifier) {
     val (icon, color) = when (interaction.type.uppercase()) {
-        "CALL"    -> Icons.Outlined.Phone to Info
+        "CALL"    -> Icons.Outlined.Phone to MaterialTheme.colorScheme.primary
         "MEETING" -> Icons.Outlined.Groups to Success
-        "EMAIL"   -> Icons.Outlined.Email to HamsaaPrimary
-        else      -> Icons.Outlined.NoteAlt to TextSecondary
+        "EMAIL"   -> Icons.Outlined.Email to MaterialTheme.colorScheme.secondary
+        else      -> Icons.Outlined.NoteAlt to MaterialTheme.colorScheme.onSurfaceVariant
     }
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = LightSurface),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(0.5.dp, LightBorder.copy(alpha = 0.5f)),
+        border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -145,11 +145,11 @@ fun InteractionCard(interaction: InteractionResponse, modifier: Modifier = Modif
                 Text(
                     interaction.interactionDate.substringBefore("T"),
                     style = MaterialTheme.typography.labelSmall,
-                    color = TextHint
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )
             }
             interaction.duration?.let {
-                Text("${it}m", style = MaterialTheme.typography.bodySmall, color = TextSecondary, fontWeight = FontWeight.Medium)
+                Text("${it}m", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
             }
         }
     }
@@ -162,19 +162,22 @@ fun PrimaryButton(
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
-    containerColor: Color = HamsaaPrimary,
-    contentColor: Color = Color.White
+    containerColor: Color? = null,
+    contentColor: Color? = null
 ) {
+    val finalContainerColor = containerColor ?: MaterialTheme.colorScheme.primary
+    val finalContentColor = contentColor ?: MaterialTheme.colorScheme.onPrimary
+    
     Button(
         onClick = onClick,
         modifier = modifier.height(56.dp),
         shape = CircleShape,
-        colors = ButtonDefaults.buttonColors(containerColor = containerColor, contentColor = contentColor),
+        colors = ButtonDefaults.buttonColors(containerColor = finalContainerColor, contentColor = finalContentColor),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp, pressedElevation = 8.dp),
         enabled = !isLoading
     ) {
         if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.size(20.dp), color = contentColor, strokeWidth = 2.dp)
+            CircularProgressIndicator(modifier = Modifier.size(20.dp), color = finalContentColor, strokeWidth = 2.dp)
             Spacer(Modifier.width(10.dp))
         } else if (icon != null) {
             Icon(icon, null, modifier = Modifier.size(20.dp))
@@ -204,7 +207,7 @@ fun InputField(
             value = value,
             onValueChange = onValueChange,
             label = { Text(label) },
-            leadingIcon = leadingIcon?.let { { Icon(it, null, tint = HamsaaPrimary) } },
+            leadingIcon = leadingIcon?.let { { Icon(it, null, tint = MaterialTheme.colorScheme.primary) } },
             trailingIcon = trailingIcon,
             modifier = Modifier.fillMaxWidth(),
             isError = isError,
@@ -216,11 +219,11 @@ fun InputField(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = MaterialTheme.colorScheme.onSurface,
                 unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                focusedBorderColor = HamsaaPrimary,
-                unfocusedBorderColor = LightBorder,
-                errorBorderColor = Error,
-                focusedLabelColor = HamsaaPrimary,
-                unfocusedLabelColor = TextHint,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                errorBorderColor = MaterialTheme.colorScheme.error,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent
             )
@@ -234,7 +237,7 @@ fun InputField(
 @Composable
 fun LoadingOverlay() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator(color = HamsaaPrimary)
+        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
     }
 }
 
@@ -252,11 +255,11 @@ fun EmptyState(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(icon, null, tint = HamsaaPrimary.copy(alpha = 0.2f), modifier = Modifier.size(80.dp))
+        Icon(icon, null, tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), modifier = Modifier.size(80.dp))
         Spacer(Modifier.height(24.dp))
         Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         Spacer(Modifier.height(8.dp))
-        Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = TextSecondary, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+        Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
         
         if (actionLabel != null && onAction != null) {
             Spacer(Modifier.height(24.dp))

@@ -50,6 +50,7 @@ fun BottomNavBar(navController: NavController) {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,
         tonalElevation = 0.dp,
+        windowInsets = NavigationBarDefaults.windowInsets, // Fix for cutoff on some devices
         modifier = Modifier.shadow(
             elevation = 16.dp, 
             spotColor = Color.Black.copy(alpha = 0.1f),

@@ -94,11 +94,11 @@ fun FollowUpsScreen(
 @Composable
 private fun GroupHeader(group: FollowUpGroup) {
     val (title, color, icon) = when(group) {
-        is FollowUpGroup.Overdue -> Triple("Overdue", Error, Icons.Outlined.Error)
+        is FollowUpGroup.Overdue -> Triple("Overdue", MaterialTheme.colorScheme.error, Icons.Outlined.Error)
         is FollowUpGroup.Today -> Triple("Due Today", Warning, Icons.Outlined.AccessTime)
         is FollowUpGroup.ThisWeek -> Triple("This Week", Success, Icons.Outlined.CalendarMonth)
         is FollowUpGroup.Upcoming -> Triple("Upcoming", Info, Icons.Outlined.EventNote)
-        is FollowUpGroup.NoHistory -> Triple("No History", TextHint, Icons.Outlined.HistoryToggleOff)
+        is FollowUpGroup.NoHistory -> Triple("No History", MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), Icons.Outlined.HistoryToggleOff)
     }
 
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
@@ -115,11 +115,11 @@ private fun FollowUpCard(
     onContactClick: (Long) -> Unit
 ) {
     val color = when(group) {
-        is FollowUpGroup.Overdue -> Error
+        is FollowUpGroup.Overdue -> MaterialTheme.colorScheme.error
         is FollowUpGroup.Today -> Warning
         is FollowUpGroup.ThisWeek -> Success
         is FollowUpGroup.Upcoming -> Info
-        is FollowUpGroup.NoHistory -> TextHint
+        is FollowUpGroup.NoHistory -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
     }
 
     Card(
@@ -141,7 +141,7 @@ private fun FollowUpCard(
             Spacer(Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(contact.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-                Text(contact.category ?: "Uncategorized", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                Text(contact.category ?: "Uncategorized", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
                         IconButton(onClick = { /* call action */ }) {
                             Icon(Icons.Outlined.Phone, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))

@@ -82,11 +82,11 @@ fun ContactsListScreen(
             OutlinedTextField(
                 value         = searchQuery,
                 onValueChange = { vm.setSearchQuery(it) },
-                placeholder   = { Text("Search contacts...", color = TextHint) },
+                placeholder   = { Text("Search contacts...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)) },
                 leadingIcon   = { Icon(Icons.Outlined.Search, null, tint = MaterialTheme.colorScheme.primary) },
                 trailingIcon  = if (searchQuery.isNotBlank()) {
                     { IconButton(onClick = { vm.setSearchQuery("") }) {
-                        Icon(Icons.Filled.Clear, null, tint = TextHint) }
+                        Icon(Icons.Filled.Clear, null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)) }
                     }
                 } else null,
                 modifier      = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp),
@@ -104,12 +104,12 @@ fun ContactsListScreen(
             TabRow(
                 selectedTabIndex = selectedTab,
                 containerColor = MaterialTheme.colorScheme.background,
-                contentColor = HamsaaPrimary,
+                contentColor = MaterialTheme.colorScheme.primary,
                 divider = {},
                 indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
                         Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                        color = HamsaaPrimary,
+                        color = MaterialTheme.colorScheme.primary,
                         height = 2.dp
                     )
                 }

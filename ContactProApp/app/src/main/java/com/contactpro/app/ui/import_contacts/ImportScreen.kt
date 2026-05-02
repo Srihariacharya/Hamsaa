@@ -271,7 +271,7 @@ fun CallLogImportTab(userId: Long, vm: ImportViewModel) {
                     items(logs) { log ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = LightSurface),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             shape = RoundedCornerShape(20.dp),
                             border = BorderStroke(0.5.dp, LightBorder.copy(alpha = 0.5f)),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
