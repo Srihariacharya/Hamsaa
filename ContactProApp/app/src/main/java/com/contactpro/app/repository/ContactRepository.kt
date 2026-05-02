@@ -17,6 +17,10 @@ class ContactRepository(private val api: ApiService) {
         api.createContact(request)
     }
 
+    suspend fun createContactsBatch(requests: List<ContactRequest>): ApiResult<List<ContactResponse>> = safeCall {
+        api.createContactsBatch(requests)
+    }
+
     suspend fun updateContact(contactId: Long, userId: Long, request: ContactRequest): ApiResult<ContactResponse> = safeCall {
         api.updateContact(contactId, userId, request)
     }

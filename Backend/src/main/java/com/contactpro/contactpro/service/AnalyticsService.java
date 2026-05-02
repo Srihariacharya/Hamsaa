@@ -37,13 +37,28 @@ public class AnalyticsService {
         response.setTaskCompletionRate(totalTasks > 0 ? (double) completedTasks / totalTasks * 100 : 0);
         response.setActiveContacts(activeContacts);
 
-        // 2. Interaction Trends (Mocked slightly for time-series but based on reality)
+        // 2. Interaction Trends (Real grouped data by week)
         List<Map<String, Object>> trends = new ArrayList<>();
         LocalDate now = LocalDate.now();
+        List<com.contactpro.contactpro.model.Interaction> interactions = interactionRepository.findByContactUserId(userId);
+        
         for (int i = 5; i >= 0; i--) {
+            LocalDate weekStart = now.minusDays(now.getDayOfWeek().getValue() - 1).minusWeeks(i);
+            LocalDate weekEnd = weekStart.plusDays(6);
+            
+            long weekDuration = 0;
+            for (com.contactpro.contactpro.model.Interaction interaction : interactions) {
+                if (interaction.getInteractionDate() != null) {
+                    LocalDate interactionDate = interaction.getInteractionDate().toLocalDate();
+                    if (!interactionDate.isBefore(weekStart) && !interactionDate.isAfter(weekEnd)) {
+                        weekDuration += (interaction.getDuration() != null ? interaction.getDuration() : 0);
+                    }
+                }
+            }
+            
             Map<String, Object> point = new HashMap<>();
             point.put("name", "Week " + (6-i));
-            point.put("value", totalInteractions / 6 + (int)(Math.random() * 5)); // simulated distribution
+            point.put("value", weekDuration); // Actual duration in minutes (since Android sends converted minutes)
             trends.add(point);
         }
         response.setInteractionTrends(trends);

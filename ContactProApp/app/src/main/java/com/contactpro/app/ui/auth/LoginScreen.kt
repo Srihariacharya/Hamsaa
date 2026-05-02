@@ -109,7 +109,7 @@ fun LoginScreen(
                 ) {
                     Column(modifier = Modifier.padding(28.dp)) {
                         Text("Welcome Back", style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold, color = TextPrimary)
+                            fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                         Text("Login to your dashboard", style = MaterialTheme.typography.bodySmall,
                             color = TextSecondary)
                         Spacer(Modifier.height(32.dp))

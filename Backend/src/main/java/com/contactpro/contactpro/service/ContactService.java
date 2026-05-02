@@ -83,6 +83,32 @@ public class ContactService {
         return mapToResponse(saved);
     }
 
+    public List<ContactResponse> createContactsBatch(List<ContactRequest> requests) {
+        if (requests.isEmpty()) return new ArrayList<>();
+        
+        Long userId = requests.get(0).getUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Contact> contactsToSave = new ArrayList<>();
+        for (ContactRequest request : requests) {
+            Contact contact = new Contact();
+            contact.setName(request.getName());
+            contact.setPhone(request.getPhone());
+            contact.setEmail(request.getEmail());
+            contact.setCategory(request.getCategory());
+            contact.setNotes(request.getNotes());
+            contact.setGender(request.getGender());
+            contact.setDob(request.getDob());
+            contact.setFollowUpFrequency(request.getFollowUpFrequency() > 0 ? request.getFollowUpFrequency() : 30);
+            contact.setUser(user);
+            contactsToSave.add(contact);
+        }
+
+        List<Contact> savedContacts = contactRepository.saveAll(contactsToSave);
+        return savedContacts.stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
+
     public ContactResponse updateContact(Long contactId, Long userId, ContactRequest request) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new RuntimeException("Contact not found"));

@@ -155,7 +155,8 @@ fun ContactDetailScreen(
                             }
 
                             Spacer(Modifier.height(24.dp))
-                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+                            androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 AssistChip(
                                     onClick = { contactVm.toggleFavorite(contactId, userId) },
                                     label   = { Text(if (contact.isFavorite) "Unfavorite" else "Favorite") },
@@ -235,7 +236,7 @@ fun ContactDetailScreen(
                                             modifier = Modifier.size(20.dp)
                                         )
                                         Spacer(Modifier.width(12.dp))
-                                        Text(task.title, style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
+                                        Text(task.title, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
                                     }
                                 }
                             }
@@ -269,8 +270,8 @@ private fun DetailRow(
         }
         Spacer(Modifier.width(16.dp))
         Column {
-            Text(label, style = MaterialTheme.typography.labelSmall, color = TextHint)
-            Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
         }
     }
 }

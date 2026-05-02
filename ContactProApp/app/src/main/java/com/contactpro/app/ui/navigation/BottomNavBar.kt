@@ -50,7 +50,7 @@ fun BottomNavBar(navController: NavController) {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,
         tonalElevation = 0.dp,
-        modifier = Modifier.height(80.dp).shadow(
+        modifier = Modifier.shadow(
             elevation = 16.dp, 
             spotColor = Color.Black.copy(alpha = 0.1f),
             ambientColor = Color.Black.copy(alpha = 0.1f)

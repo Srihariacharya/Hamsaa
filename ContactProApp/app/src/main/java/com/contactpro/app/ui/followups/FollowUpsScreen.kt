@@ -79,6 +79,7 @@ fun FollowUpsScreen(
                             is FollowUpGroup.Today -> group.contacts
                             is FollowUpGroup.ThisWeek -> group.contacts
                             is FollowUpGroup.Upcoming -> group.contacts
+                            is FollowUpGroup.NoHistory -> group.contacts
                         }) { contact ->
                             FollowUpCard(contact, group, onContactClick)
                         }
@@ -97,6 +98,7 @@ private fun GroupHeader(group: FollowUpGroup) {
         is FollowUpGroup.Today -> Triple("Due Today", Warning, Icons.Outlined.AccessTime)
         is FollowUpGroup.ThisWeek -> Triple("This Week", Success, Icons.Outlined.CalendarMonth)
         is FollowUpGroup.Upcoming -> Triple("Upcoming", Info, Icons.Outlined.EventNote)
+        is FollowUpGroup.NoHistory -> Triple("No History", TextHint, Icons.Outlined.HistoryToggleOff)
     }
 
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
@@ -117,6 +119,7 @@ private fun FollowUpCard(
         is FollowUpGroup.Today -> Warning
         is FollowUpGroup.ThisWeek -> Success
         is FollowUpGroup.Upcoming -> Info
+        is FollowUpGroup.NoHistory -> TextHint
     }
 
     Card(

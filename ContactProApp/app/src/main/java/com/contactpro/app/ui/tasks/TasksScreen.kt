@@ -131,7 +131,7 @@ private fun TaskCard(task: TaskEntity, contactName: String?, onToggle: () -> Uni
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                     textDecoration = if (isCompleted) TextDecoration.LineThrough else null,
-                    color = if (isCompleted) TextHint else TextPrimary
+                    color = if (isCompleted) TextHint else MaterialTheme.colorScheme.onSurface
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (contactName != null) {

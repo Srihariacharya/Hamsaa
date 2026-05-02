@@ -74,30 +74,40 @@ class ImportViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             _importState.value = ApiResult.Loading
             var count = 0
-            selected.forEach { dc ->
-                // Smart Category Detection
+            
+            // Step 1: Prepare batch requests
+            val requests = selected.map { dc ->
                 val detectedCategory = detectCategoryFromName(dc.name)
-                
-                val result = repo.createContact(
-                    ContactRequest(
-                        name   = dc.name,
-                        phone  = dc.phone,
-                        email  = null,
-                        category = detectedCategory, // Automatically detected or null
-                        notes  = "Synced from phone",
-                        gender = dc.gender ?: "Others",
-                        dob    = null,
-                        followUpFrequency = 7, // default 7 days
-                        userId = userId
-                    )
+                ContactRequest(
+                    name   = dc.name,
+                    phone  = dc.phone,
+                    email  = null,
+                    category = detectedCategory,
+                    notes  = "Synced from phone",
+                    gender = detectGenderFromName(dc.name),
+                    dob    = null,
+                    followUpFrequency = 7,
+                    userId = userId
                 )
-                if (result is ApiResult.Success) {
-                    count++
-                    val contactId = result.data.id
-                    // Now sync history for this contact
-                    syncHistoryForContact(contactId, dc.phone)
+            }
+            
+            // Step 2: Send in chunks of 500 to prevent backend crashes
+            val chunkedRequests = requests.chunked(500)
+            
+            for (chunk in chunkedRequests) {
+                val batchResult = repo.createContactsBatch(chunk)
+                if (batchResult is ApiResult.Success) {
+                    val savedContacts = batchResult.data
+                    count += savedContacts.size
+                    
+                    // Step 3: Sync history for each successfully saved contact in this chunk
+                    savedContacts.forEach { savedContact ->
+                        // The phone number matched the original device contact
+                        syncHistoryForContact(savedContact.id, savedContact.phone)
+                    }
                 }
             }
+            
             _importCount.value = count
             _importState.value = ApiResult.Success(
                 com.contactpro.app.model.ContactResponse(
@@ -121,6 +131,29 @@ class ImportViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    private fun detectGenderFromName(name: String): String {
+        val firstName = name.trim().split(" ").firstOrNull()?.lowercase(Locale.ROOT) ?: return "Prefer not to say"
+        
+        // Common male prefixes/structures globally
+        val maleNames = setOf("john", "david", "michael", "rahul", "raj", "mohammed", "ahmed", "ali", "carlos", "jose", "srihari")
+        // Common female prefixes/structures globally
+        val femaleNames = setOf("mary", "sarah", "jessica", "priya", "pooja", "fatima", "aisha", "maria", "ana", "anu")
+        
+        if (maleNames.contains(firstName)) return "Male"
+        if (femaleNames.contains(firstName)) return "Female"
+        
+        // Universal structural rules
+        if (firstName.endsWith("a") || firstName.endsWith("ita") || firstName.endsWith("ina") || firstName.endsWith("iya") || firstName.endsWith("ani")) {
+            return "Female" // Many global names ending in 'a' are female (Maria, Anna, Priya, Julia)
+        }
+        
+        if (firstName.endsWith("o") || firstName.endsWith("us") || firstName.endsWith("ish")) {
+            return "Male" // E.g., Marco, Julio, Marcus, Manish
+        }
+        
+        return "Prefer not to say" // Safe fallback
+    }
+
     private suspend fun syncHistoryForContact(contactId: Long, phone: String) {
         withContext(Dispatchers.IO) {
             val resolver = getApplication<Application>().contentResolver
@@ -136,11 +169,14 @@ class ImportViewModel(application: Application) : AndroidViewModel(application) 
                 
                 val dateStr = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(Date(log.date))
                 
+                // Convert Android's raw seconds to minutes
+                val durationMinutes = if (log.duration > 0L) (log.duration / 60L).coerceAtLeast(1L) else 0L
+                
                 interactionRepo.createInteraction(
                     com.contactpro.app.model.InteractionRequest(
                         type = type,
                         notes = "Sync call: ${if (log.type == CallLog.Calls.OUTGOING_TYPE) "Outgoing" else "Incoming"}",
-                        duration = log.duration,
+                        duration = durationMinutes,
                         contactId = contactId,
                         interactionDate = dateStr
                     )

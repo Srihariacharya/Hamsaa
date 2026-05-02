@@ -32,6 +32,9 @@ interface ApiService {
     @POST("api/contacts")
     suspend fun createContact(@Body request: ContactRequest): Response<ContactResponse>
 
+    @POST("api/contacts/batch")
+    suspend fun createContactsBatch(@Body requests: List<ContactRequest>): Response<List<ContactResponse>>
+
     @PUT("api/contacts/{contactId}")
     suspend fun updateContact(
         @Path("contactId") contactId: Long,

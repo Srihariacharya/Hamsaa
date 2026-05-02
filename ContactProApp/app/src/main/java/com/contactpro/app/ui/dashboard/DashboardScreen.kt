@@ -134,7 +134,7 @@ fun DashboardScreen(
             if (state.inactiveContacts.isNotEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     SectionHeader("Priority Attention Needed")
-                    state.inactiveContacts.take(3).forEach { contact ->
+                    state.inactiveContacts.take(10).forEach { contact ->
                         Card(
                             modifier = Modifier.fillMaxWidth().clickable { onContactClick(contact.id) },
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -152,7 +152,7 @@ fun DashboardScreen(
                                 Spacer(Modifier.width(16.dp))
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(contact.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-                                    Text("Inactive for ${contact.followUpFrequency}+ days", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                                    Text(getInactiveDaysText(contact), style = MaterialTheme.typography.labelSmall, color = TextSecondary)
                                 }
                                 Icon(Icons.Outlined.ArrowForward, null, tint = TextHint, modifier = Modifier.size(16.dp))
                             }
@@ -163,6 +163,19 @@ fun DashboardScreen(
 
             Spacer(Modifier.height(32.dp))
         }
+    }
+}
+
+private fun getInactiveDaysText(contact: com.contactpro.app.model.ContactResponse): String {
+    val dateStr = contact.lastInteractionDate?.take(10) ?: return "No interaction history"
+    return try {
+        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+        val date = sdf.parse(dateStr) ?: return "Inactive"
+        val diff = java.util.Calendar.getInstance().time.time - date.time
+        val days = java.util.concurrent.TimeUnit.MILLISECONDS.toDays(diff)
+        "Inactive for $days days"
+    } catch (e: Exception) {
+        "Inactive"
     }
 }
 
@@ -228,7 +241,8 @@ fun TrendChart(trends: List<com.contactpro.app.model.TrendPoint>) {
                                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.6f))
                         )
                     }
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(4.dp))
+                    Text("${point.value}m", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                     Text(point.name, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
                 }
             }

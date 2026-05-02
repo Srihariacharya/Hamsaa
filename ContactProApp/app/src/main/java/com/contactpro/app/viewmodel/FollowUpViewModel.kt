@@ -17,6 +17,7 @@ sealed class FollowUpGroup {
     data class Today(val contacts: List<ContactResponse>) : FollowUpGroup()
     data class ThisWeek(val contacts: List<ContactResponse>) : FollowUpGroup()
     data class Upcoming(val contacts: List<ContactResponse>) : FollowUpGroup()
+    data class NoHistory(val contacts: List<ContactResponse>) : FollowUpGroup()
 }
 
 class FollowUpViewModel : ViewModel() {
@@ -45,6 +46,7 @@ class FollowUpViewModel : ViewModel() {
         val today = mutableListOf<ContactResponse>()
         val thisWeek = mutableListOf<ContactResponse>()
         val upcoming = mutableListOf<ContactResponse>()
+        val noHistory = mutableListOf<ContactResponse>()
 
         val now = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
@@ -58,8 +60,11 @@ class FollowUpViewModel : ViewModel() {
         contacts.forEach { contact ->
             if (contact.followUpFrequency <= 0) return@forEach
             
-            val lastDateStr = contact.lastInteractionDate?.take(10) ?: contact.createdAt?.take(10)
-            if (lastDateStr == null) return@forEach
+            val lastDateStr = contact.lastInteractionDate?.take(10)
+            if (lastDateStr == null) {
+                noHistory.add(contact)
+                return@forEach
+            }
 
             val lastDate = sdf.parse(lastDateStr) ?: return@forEach
             val calendar = Calendar.getInstance()
@@ -82,7 +87,8 @@ class FollowUpViewModel : ViewModel() {
             if (overdue.isNotEmpty()) FollowUpGroup.Overdue(overdue.sortedBy { it.name }) else null,
             if (today.isNotEmpty()) FollowUpGroup.Today(today.sortedBy { it.name }) else null,
             if (thisWeek.isNotEmpty()) FollowUpGroup.ThisWeek(thisWeek.sortedBy { it.name }) else null,
-            if (upcoming.isNotEmpty()) FollowUpGroup.Upcoming(upcoming.sortedBy { it.name }) else null
+            if (upcoming.isNotEmpty()) FollowUpGroup.Upcoming(upcoming.sortedBy { it.name }) else null,
+            if (noHistory.isNotEmpty()) FollowUpGroup.NoHistory(noHistory.sortedBy { it.name }) else null
         )
     }
 }

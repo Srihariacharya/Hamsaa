@@ -28,6 +28,11 @@ public class ContactController {
         return contactService.createContact(request);
     }
 
+    @PostMapping("/batch")
+    public List<ContactResponse> createContactsBatch(@RequestBody List<ContactRequest> requests) {
+        return contactService.createContactsBatch(requests);
+    }
+
     /*
      * Get contacts of user
      */

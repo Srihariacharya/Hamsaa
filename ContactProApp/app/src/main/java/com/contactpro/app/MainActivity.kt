@@ -33,15 +33,17 @@ class MainActivity : ComponentActivity() {
             HamsaaTheme(darkTheme = darkTheme) {
                 val navController = rememberNavController()
 
+                val userId by session.userId.collectAsState(initial = -2L)
+                val isLoggedIn by session.isLoggedIn.collectAsState(initial = false)
                 var startDest by remember { mutableStateOf<String?>(null) }
-                var userId    by remember { mutableLongStateOf(-1L) }
 
-                // Read session once to determine start destination
-                LaunchedEffect(Unit) {
-                    val loggedIn  = session.isLoggedIn.first()
-                    val savedId   = session.userId.first()
-                    startDest = if (loggedIn && savedId > 0) Routes.CONTACTS else Routes.LOGIN
-                    userId    = savedId
+                LaunchedEffect(isLoggedIn, userId) {
+                    if (startDest == null && userId != -2L) {
+                        startDest = if (isLoggedIn && userId > 0) Routes.CONTACTS else Routes.LOGIN
+                    }
+                    if (isLoggedIn && userId > 0) {
+                        launch { com.contactpro.app.SyncManager.syncRecentCalls(this@MainActivity, userId) }
+                    }
                 }
 
                 if (startDest != null) {

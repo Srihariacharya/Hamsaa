@@ -140,7 +140,7 @@ fun InteractionCard(interaction: InteractionResponse, modifier: Modifier = Modif
             Column(modifier = Modifier.weight(1f)) {
                 Text(interaction.type, style = MaterialTheme.typography.labelMedium, color = color, fontWeight = FontWeight.Bold)
                 interaction.notes?.let {
-                    Text(it, style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
+                    Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
                 }
                 Text(
                     interaction.interactionDate.substringBefore("T"),
@@ -175,13 +175,12 @@ fun PrimaryButton(
     ) {
         if (isLoading) {
             CircularProgressIndicator(modifier = Modifier.size(20.dp), color = contentColor, strokeWidth = 2.dp)
-        } else {
-            if (icon != null) {
-                Icon(icon, null, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(10.dp))
-            }
-            Text(text, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Spacer(Modifier.width(10.dp))
+        } else if (icon != null) {
+            Icon(icon, null, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.width(10.dp))
         }
+        Text(text, fontWeight = FontWeight.Bold, fontSize = 16.sp)
     }
 }
 
@@ -215,8 +214,8 @@ fun InputField(
             singleLine = singleLine,
             maxLines = maxLines,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = TextPrimary,
-                unfocusedTextColor = TextPrimary,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                 focusedBorderColor = HamsaaPrimary,
                 unfocusedBorderColor = LightBorder,
                 errorBorderColor = Error,
@@ -255,7 +254,7 @@ fun EmptyState(
     ) {
         Icon(icon, null, tint = HamsaaPrimary.copy(alpha = 0.2f), modifier = Modifier.size(80.dp))
         Spacer(Modifier.height(24.dp))
-        Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = TextPrimary)
+        Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         Spacer(Modifier.height(8.dp))
         Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = TextSecondary, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
         

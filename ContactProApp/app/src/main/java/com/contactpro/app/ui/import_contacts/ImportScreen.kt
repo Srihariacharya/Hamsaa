@@ -102,6 +102,13 @@ fun NetworkSyncTab(userId: Long, vm: ImportViewModel) {
         }
     }
 
+    LaunchedEffect(importState) {
+        if (importState is ApiResult.Success) {
+            vm.resetImportState()
+            android.widget.Toast.makeText(context, "Network successfully ingested!", android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
     if (showDisclosure && !permissionState.status.isGranted) {
         AlertDialog(
             onDismissRequest = { showDisclosure = false },
@@ -205,8 +212,10 @@ fun NetworkSyncTab(userId: Long, vm: ImportViewModel) {
                     }
                 }
                 Spacer(Modifier.height(16.dp))
+                val syncCount by vm.importCount.collectAsState()
+                val totalSelected = contacts.count { it.selected }
                 PrimaryButton(
-                    text = "Authorize Selection Ingestion",
+                    text = if (importState is ApiResult.Loading) "Ingesting $syncCount / $totalSelected..." else "Authorize Selection Ingestion",
                     onClick = { vm.importSelectedContacts(userId) },
                     modifier = Modifier.fillMaxWidth(),
                     isLoading = importState is ApiResult.Loading
@@ -276,11 +285,11 @@ fun CallLogImportTab(userId: Long, vm: ImportViewModel) {
                                 )
                                 Spacer(Modifier.width(16.dp))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(log.name ?: log.number, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                                    Text(log.name ?: log.number, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                                     Text(SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()).format(Date(log.date)), 
                                         style = MaterialTheme.typography.labelSmall, color = TextSecondary)
                                 }
-                                Text("${log.duration}s", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                                Text("${log.duration}s", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             }
                         }
                     }
