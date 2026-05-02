@@ -79,6 +79,12 @@ public class InteractionService {
         );
     }
 
+    public List<InteractionResponse> createInteractionsBatch(List<InteractionRequest> requests) {
+        return requests.stream()
+                .map(this::createInteraction)
+                .collect(Collectors.toList());
+    }
+
     public List<InteractionResponse> getInteractionsByContact(Long contactId) {
         return interactionRepository.findByContactId(contactId)
                 .stream()

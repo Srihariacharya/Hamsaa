@@ -10,6 +10,10 @@ class InteractionRepository(private val api: ApiService) {
         api.createInteraction(request)
     }
 
+    suspend fun createInteractionsBatch(requests: List<InteractionRequest>): ApiResult<List<InteractionResponse>> = safeCall {
+        api.createInteractionsBatch(requests)
+    }
+
     suspend fun getInteractions(contactId: Long): ApiResult<List<InteractionResponse>> = safeCall {
         api.getInteractions(contactId)
     }

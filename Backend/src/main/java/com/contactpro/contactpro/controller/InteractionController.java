@@ -51,6 +51,11 @@ public class InteractionController {
         return interactionService.createInteraction(request);
     }
 
+    @PostMapping("/batch")
+    public List<InteractionResponse> createInteractionsBatch(@RequestBody List<InteractionRequest> requests) {
+        return interactionService.createInteractionsBatch(requests);
+    }
+
     /*
      * API: Get interaction history of a contact
      *

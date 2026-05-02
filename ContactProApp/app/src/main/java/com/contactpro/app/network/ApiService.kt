@@ -96,6 +96,9 @@ interface ApiService {
     @POST("api/interactions")
     suspend fun createInteraction(@Body request: InteractionRequest): Response<InteractionResponse>
 
+    @POST("api/interactions/batch")
+    suspend fun createInteractionsBatch(@Body requests: List<InteractionRequest>): Response<List<InteractionResponse>>
+
     @GET("api/interactions/contact/{contactId}")
     suspend fun getInteractions(@Path("contactId") contactId: Long): Response<List<InteractionResponse>>
 

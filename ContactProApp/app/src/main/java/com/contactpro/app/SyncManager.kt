@@ -32,51 +32,56 @@ object SyncManager {
                 val contactRepo = ContactRepository(RetrofitClient.apiService)
                 val interactionRepo = InteractionRepository(RetrofitClient.apiService)
                 
-                // 1. Fetch all backend contacts
+                // 1. Fetch backend contacts
                 val contactsResult = contactRepo.getContacts(userId)
                 val backendContacts = if (contactsResult is ApiResult.Success) contactsResult.data else emptyList()
-                if (backendContacts.isEmpty()) {
-                    isSyncing = false
-                    return@withContext
-                }
+                if (backendContacts.isEmpty()) return@withContext
                 
-                // 2. Fetch ALL existing interactions for this user in ONE call (Highly Optimized)
+                // 2. Fetch ALL existing interactions once
                 val interactionsResult = interactionRepo.getInteractionsByUser(userId)
                 val allExistingInteractions = if (interactionsResult is ApiResult.Success) interactionsResult.data else emptyList()
                 
-                // Group existing interactions by contactId for fast lookup
-                val existingTimestampsByContact = allExistingInteractions.groupBy({ it.id }, { it.interactionDate.substring(0, 19) })
+                // Use a normalized timestamp (no T, no spaces) to prevent string mismatch
+                val existingTimestampsByContact = allExistingInteractions.groupBy(
+                    { it.contactId }, 
+                    { it.interactionDate.replace("[^0-9]".toRegex(), "").take(12) } // yyyyMMddHHmm
+                )
                 
-                // 3. Fetch all call logs from phone
+                // 3. Read phone logs
                 val logs = readCallLogs(context)
                 val logsByNumber = logs.groupBy { normalizePhone(it.number) }
                 
-                val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                val sdfISO = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                val newInteractions = mutableListOf<InteractionRequest>()
                 
-                backendContacts.forEach { contact ->
-                    val contactLogs = logsByNumber[normalizePhone(contact.phone)] ?: return@forEach
+                for (contact in backendContacts) {
+                    val contactLogs = logsByNumber[normalizePhone(contact.phone)] ?: continue
+                    val existingSet = existingTimestampsByContact[contact.id]?.toSet() ?: emptySet()
                     
-                    val existingTimestamps = existingTimestampsByContact[contact.id]?.toSet() ?: emptySet()
-                    
-                    contactLogs.forEach { log ->
-                        val dateStrISO = sdf.format(Date(log.date))
+                    for (log in contactLogs) {
+                        val dateISO = sdfISO.format(Date(log.date))
+                        val normalizedLogTime = dateISO.replace("[^0-9]".toRegex(), "").take(12)
                         
-                        // Check if this exact call (by timestamp) already exists locally (no network call needed)
-                        if (existingTimestamps.contains(dateStrISO)) return@forEach
+                        // Duplicate check
+                        if (existingSet.contains(normalizedLogTime)) continue
                         
                         val timeStr = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(log.date))
-                        val durationSeconds = log.duration.coerceAtMost(7200L)
-                        
-                        // Only create if it's new
-                        interactionRepo.createInteraction(
+                        newInteractions.add(
                             InteractionRequest(
                                 type = "CALL",
                                 notes = "Sync call: ${if (log.type == CallLog.Calls.OUTGOING_TYPE) "Outgoing" else "Incoming"} at $timeStr",
-                                duration = durationSeconds,
+                                duration = log.duration.coerceAtMost(7200L),
                                 contactId = contact.id,
-                                interactionDate = dateStrISO
+                                interactionDate = dateISO
                             )
                         )
+                    }
+                }
+                
+                // 4. BATCH SYNC: Upload everything in chunks of 50 to prevent timeouts
+                if (newInteractions.isNotEmpty()) {
+                    newInteractions.chunked(50).forEach { chunk ->
+                        interactionRepo.createInteractionsBatch(chunk)
                     }
                 }
             }
