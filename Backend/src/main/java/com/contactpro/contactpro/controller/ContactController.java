@@ -152,5 +152,15 @@ public class ContactController {
         return "Contact deleted successfully";
     }
 
+    /**
+     * One-time cleanup: removes all duplicate contacts for a user.
+     * Keeps the first occurrence of each phone number.
+     * DELETE /api/contacts/deduplicate/{userId}
+     */
+    @DeleteMapping("/deduplicate/{userId}")
+    public String deduplicateContacts(@PathVariable Long userId) {
+        int deleted = contactService.deleteDuplicateContacts(userId);
+        return "Removed " + deleted + " duplicate contacts for userId=" + userId;
+    }
 
 }

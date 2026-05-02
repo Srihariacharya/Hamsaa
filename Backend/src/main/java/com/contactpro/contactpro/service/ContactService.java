@@ -5,10 +5,13 @@ import ezvcard.VCard;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.contactpro.contactpro.repository.ContactRepository;
@@ -34,6 +37,13 @@ public class ContactService {
         this.contactRepository = contactRepository;
         this.interactionRepository = interactionRepository;
         this.userRepository = userRepository;
+    }
+
+    /** Normalize a phone number to last 10 digits for comparison */
+    private String normalizePhone(String phone) {
+        if (phone == null) return "";
+        String digits = phone.replaceAll("[^0-9]", "");
+        return digits.length() >= 10 ? digits.substring(digits.length() - 10) : digits;
     }
 
     private ContactResponse mapToResponse(Contact contact) {
@@ -68,6 +78,21 @@ public class ContactService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Check for duplicate by phone
+        String normalizedNew = normalizePhone(request.getPhone());
+        if (!normalizedNew.isEmpty()) {
+            List<Contact> existing = contactRepository.findByUserId(request.getUserId());
+            boolean exists = existing.stream()
+                .anyMatch(c -> normalizePhone(c.getPhone()).equals(normalizedNew));
+            if (exists) {
+                return existing.stream()
+                    .filter(c -> normalizePhone(c.getPhone()).equals(normalizedNew))
+                    .findFirst()
+                    .map(this::mapToResponse)
+                    .orElseThrow();
+            }
+        }
+
         Contact contact = new Contact();
         contact.setName(request.getName());
         contact.setPhone(request.getPhone());
@@ -83,15 +108,36 @@ public class ContactService {
         return mapToResponse(saved);
     }
 
+    /**
+     * Batch create contacts with DEDUPLICATION by phone number.
+     * If a contact with the same phone already exists for this user, it is SKIPPED.
+     * This prevents duplicate contacts when the user presses "Sync" multiple times.
+     */
     public List<ContactResponse> createContactsBatch(List<ContactRequest> requests) {
         if (requests.isEmpty()) return new ArrayList<>();
-        
+
         Long userId = requests.get(0).getUserId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Load all existing phone numbers for this user (normalized)
+        List<Contact> existingContacts = contactRepository.findByUserId(userId);
+        Set<String> existingPhones = existingContacts.stream()
+                .map(c -> normalizePhone(c.getPhone()))
+                .collect(Collectors.toSet());
+
         List<Contact> contactsToSave = new ArrayList<>();
+        Set<String> phonesInThisBatch = new HashSet<>(); // Prevent duplicates within the same batch
+
         for (ContactRequest request : requests) {
+            String normalizedPhone = normalizePhone(request.getPhone());
+
+            // Skip if phone already in database OR already seen in this batch
+            if (!normalizedPhone.isEmpty() &&
+                (existingPhones.contains(normalizedPhone) || phonesInThisBatch.contains(normalizedPhone))) {
+                continue;
+            }
+
             Contact contact = new Contact();
             contact.setName(request.getName());
             contact.setPhone(request.getPhone());
@@ -103,10 +149,44 @@ public class ContactService {
             contact.setFollowUpFrequency(request.getFollowUpFrequency() > 0 ? request.getFollowUpFrequency() : 30);
             contact.setUser(user);
             contactsToSave.add(contact);
+
+            if (!normalizedPhone.isEmpty()) {
+                phonesInThisBatch.add(normalizedPhone);
+            }
         }
 
         List<Contact> savedContacts = contactRepository.saveAll(contactsToSave);
         return savedContacts.stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
+
+    /**
+     * Delete duplicate contacts for a user, keeping only the first occurrence
+     * of each phone number. Call this once to clean up existing duplicates.
+     */
+    @Transactional
+    public int deleteDuplicateContacts(Long userId) {
+        List<Contact> allContacts = contactRepository.findByUserId(userId);
+        Set<String> seenPhones = new HashSet<>();
+        List<Contact> toDelete = new ArrayList<>();
+
+        for (Contact contact : allContacts) {
+            String normalized = normalizePhone(contact.getPhone());
+            if (!normalized.isEmpty()) {
+                if (seenPhones.contains(normalized)) {
+                    // This is a duplicate - delete its interactions first
+                    List<Interaction> interactions = interactionRepository.findByContactId(contact.getId());
+                    if (!interactions.isEmpty()) {
+                        interactionRepository.deleteAll(interactions);
+                    }
+                    toDelete.add(contact);
+                } else {
+                    seenPhones.add(normalized);
+                }
+            }
+        }
+
+        contactRepository.deleteAll(toDelete);
+        return toDelete.size();
     }
 
     public ContactResponse updateContact(Long contactId, Long userId, ContactRequest request) {
@@ -135,27 +215,21 @@ public class ContactService {
     public ContactResponse toggleFavorite(Long contactId, Long userId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new RuntimeException("Contact not found"));
-
         if (!contact.getUser().getId().equals(userId)) {
             throw new RuntimeException("You are not allowed to modify this contact");
         }
-
         contact.setFavorite(!contact.isFavorite());
-        Contact updated = contactRepository.save(contact);
-        return mapToResponse(updated);
+        return mapToResponse(contactRepository.save(contact));
     }
 
     public ContactResponse toggleBlock(Long contactId, Long userId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new RuntimeException("Contact not found"));
-
         if (!contact.getUser().getId().equals(userId)) {
             throw new RuntimeException("You are not allowed to modify this contact");
         }
-
         contact.setBlocked(!contact.isBlocked());
-        Contact updated = contactRepository.save(contact);
-        return mapToResponse(updated);
+        return mapToResponse(contactRepository.save(contact));
     }
 
     public void importFromVcf(Long userId, MultipartFile file) {
@@ -185,14 +259,11 @@ public class ContactService {
     }
 
     public List<ContactResponse> getContactsByUser(Long userId) {
-        List<Contact> contacts = contactRepository.findByUserId(userId);
-        // Contacts will naturally be empty for a new user until they sync.
-        return contacts.stream()
+        return contactRepository.findByUserId(userId)
+                .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
-
-
 
     public ContactResponse getContactById(Long contactId) {
         Contact contact = contactRepository.findById(contactId)
@@ -201,8 +272,8 @@ public class ContactService {
     }
 
     public Page<ContactResponse> getContactsPaged(Long userId, int page, int size) {
-        Page<Contact> contacts = contactRepository.findByUserId(userId, PageRequest.of(page, size));
-        return contacts.map(this::mapToResponse);
+        return contactRepository.findByUserId(userId, PageRequest.of(page, size))
+                .map(this::mapToResponse);
     }
 
     public List<ContactResponse> searchContacts(String name) {
