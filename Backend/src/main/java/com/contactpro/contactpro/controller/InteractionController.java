@@ -65,6 +65,11 @@ public class InteractionController {
         return interactionService.getInteractionsByContact(contactId);
     }
 
+    @GetMapping("/user/{userId}")
+    public List<InteractionResponse> getInteractionsByUser(@PathVariable Long userId) {
+        return interactionService.getInteractionsByUser(userId);
+    }
+
     /**
      * One-time cleanup: deletes all interactions with corrupted duration > 120 min.
      * Call this once after deploying to clean the database.

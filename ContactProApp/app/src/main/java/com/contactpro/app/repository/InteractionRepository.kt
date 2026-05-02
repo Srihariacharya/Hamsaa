@@ -13,4 +13,8 @@ class InteractionRepository(private val api: ApiService) {
     suspend fun getInteractions(contactId: Long): ApiResult<List<InteractionResponse>> = safeCall {
         api.getInteractions(contactId)
     }
+
+    suspend fun getInteractionsByUser(userId: Long): ApiResult<List<InteractionResponse>> = safeCall {
+        api.getInteractionsByUser(userId)
+    }
 }

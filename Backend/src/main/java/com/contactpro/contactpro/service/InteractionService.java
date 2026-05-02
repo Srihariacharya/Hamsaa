@@ -91,4 +91,17 @@ public class InteractionService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    public List<InteractionResponse> getInteractionsByUser(Long userId) {
+        return interactionRepository.findByContactUserId(userId)
+                .stream()
+                .map(i -> new InteractionResponse(
+                        i.getId(),
+                        i.getType(),
+                        i.getNotes(),
+                        i.getDuration(),
+                        i.getInteractionDate()
+                ))
+                .collect(Collectors.toList());
+    }
 }

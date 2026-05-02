@@ -32,21 +32,22 @@ object SyncManager {
                 val contactRepo = ContactRepository(RetrofitClient.apiService)
                 val interactionRepo = InteractionRepository(RetrofitClient.apiService)
                 
-                // Step 0: Clean up
-                try { RetrofitClient.apiService.cleanupCorruptedInteractions(userId) } catch (e: Exception) {}
-                try { RetrofitClient.apiService.deduplicateContacts(userId) } catch (e: Exception) {}
-                
-                // Optional: Wipe old low-precision data once to ensure a clean start
-                // We'll only do this if the user hasn't successfully synced with high-precision yet
-                val session = com.contactpro.app.SessionManager(context)
-                val hasAppliedFix = session.userDataStore.data.first().id != -1L // Use a better flag if available
-                
                 // 1. Fetch all backend contacts
                 val contactsResult = contactRepo.getContacts(userId)
                 val backendContacts = if (contactsResult is ApiResult.Success) contactsResult.data else emptyList()
-                if (backendContacts.isEmpty()) return@withContext
+                if (backendContacts.isEmpty()) {
+                    isSyncing = false
+                    return@withContext
+                }
                 
-                // 2. Fetch all call logs
+                // 2. Fetch ALL existing interactions for this user in ONE call (Highly Optimized)
+                val interactionsResult = interactionRepo.getInteractionsByUser(userId)
+                val allExistingInteractions = if (interactionsResult is ApiResult.Success) interactionsResult.data else emptyList()
+                
+                // Group existing interactions by contactId for fast lookup
+                val existingTimestampsByContact = allExistingInteractions.groupBy({ it.id }, { it.interactionDate.substring(0, 19) })
+                
+                // 3. Fetch all call logs from phone
                 val logs = readCallLogs(context)
                 val logsByNumber = logs.groupBy { normalizePhone(it.number) }
                 
@@ -55,24 +56,18 @@ object SyncManager {
                 backendContacts.forEach { contact ->
                     val contactLogs = logsByNumber[normalizePhone(contact.phone)] ?: return@forEach
                     
-                    // Instead of a simple "after" check, we want to capture ALL history 
-                    // unless the record already exists. 
-                    // For now, to keep it simple and fix the user's issue, 
-                    // we will sync everything if the contact has very few interactions
-                    val existingInteractions = interactionRepo.getInteractions(contact.id)
-                    val existingTimestamps = if (existingInteractions is ApiResult.Success) {
-                        existingInteractions.data.map { it.interactionDate.substring(0, 19) }.toSet()
-                    } else emptySet()
+                    val existingTimestamps = existingTimestampsByContact[contact.id]?.toSet() ?: emptySet()
                     
                     contactLogs.forEach { log ->
                         val dateStrISO = sdf.format(Date(log.date))
                         
-                        // Check if this exact call (by timestamp) already exists
+                        // Check if this exact call (by timestamp) already exists locally (no network call needed)
                         if (existingTimestamps.contains(dateStrISO)) return@forEach
                         
                         val timeStr = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(log.date))
                         val durationSeconds = log.duration.coerceAtMost(7200L)
                         
+                        // Only create if it's new
                         interactionRepo.createInteraction(
                             InteractionRequest(
                                 type = "CALL",
@@ -121,10 +116,3 @@ object SyncManager {
         return result
     }
 }
-
-data class CallLogEntryBasic(
-    val number: String,
-    val duration: Long,
-    val type: Int,
-    val date: Long
-)
