@@ -51,6 +51,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             val analytics = (analyticsResult as? ApiResult.Success)?.data
             val contacts  = (contactsResult  as? ApiResult.Success)?.data ?: emptyList()
 
+            // Sort contacts for most contacted
+            val mostContacted = contacts.sortedByDescending { it.lastInteractionDate }.take(5)
+
             // Priority Attention: Calculate who is most overdue
             val now = System.currentTimeMillis()
             val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
