@@ -71,10 +71,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             }.take(10)
 
             // Ensure labels are Week 1, Week 2, etc.
-            val rawTrends = analytics?.interactionTrends ?: emptyList()
-            val trends = rawTrends.mapIndexed { index, point ->
-                point.copy(name = "Week ${index + 1}")
-            }
+            val trends = analytics?.interactionTrends ?: emptyList()
 
             _uiState.value = DashboardUiState(
                 userName          = name.ifBlank { "Executive Agent" },

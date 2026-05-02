@@ -21,7 +21,9 @@ class CallReceiver : BroadcastReceiver() {
                 CoroutineScope(Dispatchers.IO).launch {
                     val userId = session.userId.first()
                     if (userId != -1L) {
-                        Log.d("CallReceiver", "Call ended, triggering background sync for user $userId")
+                        Log.d("CallReceiver", "Call ended, waiting 2s for log to stabilize...")
+                        kotlinx.coroutines.delay(2000)
+                        Log.d("CallReceiver", "Triggering background sync for user $userId")
                         SyncManager.syncRecentCalls(context, userId)
                     }
                 }

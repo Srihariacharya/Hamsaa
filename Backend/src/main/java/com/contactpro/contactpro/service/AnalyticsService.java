@@ -26,7 +26,7 @@ public class AnalyticsService {
         AnalyticsResponse response = new AnalyticsResponse();
 
         // 1. Basic Counts
-        long totalInteractions = interactionRepository.countByUserId(userId);
+        long totalInteractions = interactionRepository.countByUserIdAndDurationGreaterThan(userId, 0);
         Integer totalDuration = interactionRepository.getTotalDurationByUserId(userId);
         long totalTasks = taskRepository.countByUserId(userId);
         long completedTasks = taskRepository.countByUserIdAndStatus(userId, "completed");

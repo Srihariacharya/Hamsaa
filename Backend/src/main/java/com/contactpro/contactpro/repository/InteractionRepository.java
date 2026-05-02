@@ -49,6 +49,9 @@ GROUP BY i.contact.id
     @Query("SELECT COUNT(i) FROM Interaction i WHERE i.contact.user.id = :userId")
     long countByUserId(Long userId);
 
+    @Query("SELECT COUNT(i) FROM Interaction i WHERE i.contact.user.id = :userId AND i.duration > :duration")
+    long countByUserIdAndDurationGreaterThan(Long userId, int duration);
+
     @Query("SELECT SUM(i.duration) FROM Interaction i WHERE i.contact.user.id = :userId")
     Integer getTotalDurationByUserId(Long userId);
 

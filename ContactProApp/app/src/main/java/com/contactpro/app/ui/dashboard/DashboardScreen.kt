@@ -36,7 +36,20 @@ fun DashboardScreen(
 ) {
     val state by vm.uiState.collectAsState()
 
-    LaunchedEffect(userId) { vm.loadDashboard(userId) }
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
+
+    // Refresh when screen is resumed or every 30 seconds
+    LaunchedEffect(userId, lifecycleState) {
+        if (lifecycleState == androidx.lifecycle.Lifecycle.State.RESUMED) {
+            vm.loadDashboard(userId)
+            // Start a timer for auto-refresh
+            while (true) {
+                kotlinx.coroutines.delay(30_000)
+                vm.loadDashboard(userId)
+            }
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -135,6 +148,38 @@ fun DashboardScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     SectionHeader("Interaction Trends")
                     TrendChart(state.interactionTrends)
+                }
+            }
+
+            // Recently Contacted (Intelligence Feed)
+            if (state.mostContacted.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    SectionHeader("Intelligence Feed")
+                    state.mostContacted.forEach { contact ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth().clickable { onContactClick(contact.id) },
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            shape = RoundedCornerShape(20.dp),
+                            border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier.size(40.dp).clip(CircleShape).background(HamsaaPrimary.copy(alpha = 0.1f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(contact.name.take(1).uppercase(), color = HamsaaPrimary, fontWeight = FontWeight.Bold)
+                                }
+                                Spacer(Modifier.width(16.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(contact.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                                    Text("Last active: ${contact.lastInteractionDate?.take(16)?.replace("T", " ") ?: "Just now"}", 
+                                        style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                Icon(Icons.Outlined.ArrowForward, null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), modifier = Modifier.size(16.dp))
+                            }
+                        }
+                    }
                 }
             }
 
