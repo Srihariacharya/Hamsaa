@@ -25,6 +25,7 @@ import com.contactpro.app.ui.interactions.InteractionHistorySection
 import com.contactpro.app.ui.theme.*
 import com.contactpro.app.viewmodel.ContactViewModel
 import com.contactpro.app.viewmodel.InteractionViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,6 +85,17 @@ fun ContactDetailScreen(
                     IconButton(onClick = onBack) { Icon(Icons.Outlined.ArrowBack, null, tint = HamsaaPrimary) }
                 },
                 actions = {
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    val scope = rememberCoroutineScope()
+                    IconButton(onClick = {
+                        scope.launch {
+                            com.contactpro.app.SyncManager.syncRecentCalls(context, userId)
+                            contactVm.loadContactDetail(contactId)
+                            interactionVm.loadInteractions(contactId)
+                        }
+                    }) {
+                        Icon(Icons.Outlined.Refresh, "Refresh", tint = HamsaaPrimary)
+                    }
                     IconButton(onClick = { onEditContact(contactId) }) {
                         Icon(Icons.Outlined.Edit, "Modify", tint = HamsaaPrimary)
                     }
