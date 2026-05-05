@@ -33,7 +33,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, com.google.accompanist.permissions.ExperimentalPermissionsApi::class)
 @Composable
 fun TasksScreen(
     userId: Long,
@@ -44,6 +44,18 @@ fun TasksScreen(
     val contactsResult by contactVm.contacts.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    // Notification Permission Handling (Android 13+)
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+        val permissionState = com.google.accompanist.permissions.rememberPermissionState(
+            android.Manifest.permission.POST_NOTIFICATIONS
+        )
+        LaunchedEffect(Unit) {
+            if (!permissionState.status.isGranted) {
+                permissionState.launchPermissionRequest()
+            }
+        }
+    }
 
     LaunchedEffect(userId) { contactVm.loadContacts(userId) }
     LaunchedEffect(Unit) { TaskNotificationHelper.createChannel(context) }
