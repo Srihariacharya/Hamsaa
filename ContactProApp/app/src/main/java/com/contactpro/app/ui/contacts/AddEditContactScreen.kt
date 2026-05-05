@@ -36,7 +36,7 @@ fun AddEditContactScreen(
     var phone    by remember { mutableStateOf(existingContact?.phone    ?: "") }
     var email    by remember { mutableStateOf(existingContact?.email    ?: "") }
     var category by remember { mutableStateOf(existingContact?.category ?: "") }
-    var gender   by remember { mutableStateOf(existingContact?.gender   ?: "Others") }
+    var gender   by remember { mutableStateOf(existingContact?.gender   ?: "Prefer not to say") }
     var dob      by remember { mutableStateOf(existingContact?.dob      ?: "") }
     var notes    by remember { mutableStateOf("") }
     var followUp by remember { mutableStateOf(existingContact?.followUpFrequency?.toString() ?: "7") }
@@ -58,7 +58,7 @@ fun AddEditContactScreen(
         }
     }
 
-    val genderOptions   = listOf("Male", "Female", "Others")
+    val genderOptions   = listOf("Male", "Female", "Other", "Prefer not to say")
     val categoryOptions = listOf("Family", "Friend", "Partner", "Client", "Lead", "Other")
     var genderExpanded   by remember { mutableStateOf(false) }
     var categoryExpanded by remember { mutableStateOf(false) }

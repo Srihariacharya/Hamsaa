@@ -84,7 +84,7 @@ class ImportViewModel(application: Application) : AndroidViewModel(application) 
                     email  = null,
                     category = detectedCategory,
                     notes  = "Synced from phone",
-                    gender = detectGenderFromName(dc.name),
+                    gender = com.contactpro.app.util.GenderPredictor.predict(dc.name),
                     dob    = null,
                     followUpFrequency = 7,
                     userId = userId
@@ -126,31 +126,6 @@ class ImportViewModel(application: Application) : AndroidViewModel(application) 
             lowerName.contains("manager") || lowerName.contains("director") -> "PROFESSIONAL"
             else -> null // Leave it blank if not understandable
         }
-    }
-
-    private fun detectGenderFromName(name: String): String {
-        val firstName = name.trim().split(" ").firstOrNull()?.lowercase(Locale.ROOT) ?: return "Prefer not to say"
-        
-        // Common male prefixes/structures globally
-        val maleNames = setOf("john", "david", "michael", "rahul", "raj", "mohammed", "ahmed", "ali", "carlos", "jose", "srihari")
-        // Common female prefixes/structures globally
-        val femaleNames = setOf("mary", "sarah", "jessica", "priya", "pooja", "fatima", "aisha", "maria", "ana", "anu")
-        
-        if (maleNames.contains(firstName)) return "Male"
-        if (femaleNames.contains(firstName)) return "Female"
-        
-        // Female patterns (global heuristics)
-        if (firstName.endsWith("a") || firstName.endsWith("ita") || firstName.endsWith("ina") || 
-            firstName.endsWith("iya") || firstName.endsWith("ani") || firstName.endsWith("ee") || 
-            firstName.endsWith("ni") || firstName.endsWith("ma")) return "Female"
-            
-        // Male patterns (global heuristics)
-        if (firstName.endsWith("o") || firstName.endsWith("us") || firstName.endsWith("ish") || 
-            firstName.endsWith("ul") || firstName.endsWith("an") || firstName.endsWith("it") || 
-            firstName.endsWith("sh") || firstName.endsWith("ra") || firstName.endsWith("th") || 
-            firstName.endsWith("nd") || firstName.endsWith("ej") || firstName.endsWith("iv")) return "Male"
-            
-        return "Prefer not to say" // Safe fallback
     }
 
     private suspend fun syncHistoryForContact(contactId: Long, phone: String) {

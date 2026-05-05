@@ -171,5 +171,35 @@ class ContactViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun recalculateGenders(userId: Long) {
+        viewModelScope.launch {
+            val currentContactsResult = repo.getContacts(userId)
+            if (currentContactsResult is ApiResult.Success) {
+                val contactsToUpdate = currentContactsResult.data.filter { contact ->
+                    val predicted = com.contactpro.app.util.GenderPredictor.predict(contact.name)
+                    // Only update if it's currently wrong or "Others"
+                    contact.gender != predicted && (contact.gender == "Female" || contact.gender == "Others" || contact.gender == null)
+                }
+
+                contactsToUpdate.forEach { contact ->
+                    repo.updateContact(contact.id, userId, ContactRequest(
+                        name = contact.name,
+                        phone = contact.phone,
+                        email = contact.email,
+                        category = contact.category,
+                        notes = contact.notes,
+                        gender = com.contactpro.app.util.GenderPredictor.predict(contact.name),
+                        dob = contact.dob,
+                        userId = userId
+                    ))
+                }
+                // Refresh list after updates
+                if (contactsToUpdate.isNotEmpty()) {
+                    loadContacts(userId)
+                }
+            }
+        }
+    }
+
     fun clearSearchResults() { _searchResults.value = null }
 }

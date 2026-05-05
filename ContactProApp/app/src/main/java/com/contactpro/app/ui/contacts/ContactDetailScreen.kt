@@ -90,11 +90,12 @@ fun ContactDetailScreen(
                     IconButton(onClick = {
                         scope.launch {
                             com.contactpro.app.SyncManager.syncRecentCalls(context, userId)
+                            contactVm.recalculateGenders(userId)
                             contactVm.loadContactDetail(contactId)
                             interactionVm.loadInteractions(contactId)
                         }
                     }) {
-                        Icon(Icons.Outlined.Refresh, "Refresh", tint = HamsaaPrimary)
+                        Icon(Icons.Outlined.Refresh, "Refresh Intelligence", tint = HamsaaPrimary)
                     }
                     IconButton(onClick = { onEditContact(contactId) }) {
                         Icon(Icons.Outlined.Edit, "Modify", tint = HamsaaPrimary)
@@ -217,7 +218,7 @@ fun ContactDetailScreen(
                             verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             DetailRow(Icons.Outlined.Phone,     "Connectivity",    contact.phone)
                             contact.email?.let { DetailRow(Icons.Outlined.Email, "Secure Channel", it) }
-                            DetailRow(Icons.Outlined.Person, "Classification", contact.gender ?: "Others")
+                            DetailRow(Icons.Outlined.Person, "Classification", contact.gender ?: "Prefer not to say")
                             contact.dob?.let    { DetailRow(Icons.Outlined.Cake, "Commencement", it) }
                             if (contact.followUpFrequency > 0)
                                 DetailRow(Icons.Outlined.Alarm, "Refresh Interval", "${contact.followUpFrequency} Days")

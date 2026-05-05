@@ -45,7 +45,7 @@ object SyncManager {
                             email = null,
                             category = "Personal",
                             notes = "Auto-synced from device",
-                            gender = null,
+                            gender = com.contactpro.app.util.GenderPredictor.predict(it.name),
                             dob = null,
                             userId = userId
                         )
