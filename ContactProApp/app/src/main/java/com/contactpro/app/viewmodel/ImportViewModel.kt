@@ -109,7 +109,7 @@ class ImportViewModel(application: Application) : AndroidViewModel(application) 
             _importState.value = ApiResult.Success(
                 com.contactpro.app.model.ContactResponse(
                     id = 0, name = "$count imported with history", phone = "", email = null,
-                    category = null, gender = null, dob = null, followUpFrequency = 0,
+                    category = null, gender = null, dob = null, notes = null, followUpFrequency = 0,
                     lastInteractionDate = null, isBlocked = false, isFavorite = false, createdAt = null
                 )
             )
