@@ -37,6 +37,8 @@ public class SecurityConfig {
                                 "/api/integrations/google/callback",
                                 "/api/auth/login",
                                 "/api/auth/register",
+                                "/api/interactions/deduplicate/**",
+                                "/api/interactions/reset/**",
                                 "/api/ping")
                         .permitAll()
                         .requestMatchers("/api/auth/profile/**").authenticated()
