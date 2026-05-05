@@ -101,9 +101,17 @@ object SyncManager {
                 
                 // STEP 5: Batch upload interaction history in chunks of 50
                 if (newInteractions.isNotEmpty()) {
+                    Log.d("SyncManager", "Uploading ${newInteractions.size} new interactions")
                     newInteractions.chunked(50).forEach { chunk ->
                         interactionRepo.createInteractionsBatch(chunk)
                     }
+                }
+                
+                // STEP 6: Clean up any duplicates that slipped through
+                try {
+                    RetrofitClient.apiService.deduplicateInteractions(userId)
+                } catch (e: Exception) {
+                    Log.w("SyncManager", "Dedup call failed (non-critical)", e)
                 }
             }
         } catch (e: Exception) {

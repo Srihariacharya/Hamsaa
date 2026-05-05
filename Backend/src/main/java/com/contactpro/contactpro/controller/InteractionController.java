@@ -97,4 +97,40 @@ public class InteractionController {
         interactionRepository.deleteAll(interactions);
         return "Reset complete. All intelligence logs deleted for userId=" + userId;
     }
+
+    /**
+     * Deduplicate: removes duplicate interactions (same contact + same minute).
+     * Keeps only the first occurrence of each.
+     * DELETE /api/interactions/deduplicate/{userId}
+     */
+    @DeleteMapping("/deduplicate/{userId}")
+    @org.springframework.transaction.annotation.Transactional
+    public String deduplicateInteractions(@PathVariable Long userId) {
+        List<com.contactpro.contactpro.model.Interaction> all = interactionRepository.findByContactUserId(userId);
+        
+        // Group by contactId + timestamp rounded to minute
+        java.util.Map<String, java.util.List<com.contactpro.contactpro.model.Interaction>> grouped = new java.util.HashMap<>();
+        for (com.contactpro.contactpro.model.Interaction i : all) {
+            String key = i.getContact().getId() + "_" + 
+                (i.getInteractionDate() != null ? i.getInteractionDate().withSecond(0).withNano(0).toString() : "null");
+            grouped.computeIfAbsent(key, k -> new java.util.ArrayList<>()).add(i);
+        }
+        
+        // For each group with more than 1 entry, delete all but the first
+        java.util.List<com.contactpro.contactpro.model.Interaction> toDelete = new java.util.ArrayList<>();
+        for (java.util.List<com.contactpro.contactpro.model.Interaction> group : grouped.values()) {
+            if (group.size() > 1) {
+                // Keep first, delete rest
+                for (int idx = 1; idx < group.size(); idx++) {
+                    toDelete.add(group.get(idx));
+                }
+            }
+        }
+        
+        if (!toDelete.isEmpty()) {
+            interactionRepository.deleteAll(toDelete);
+        }
+        
+        return "Deduplication complete. Removed " + toDelete.size() + " duplicate interactions for userId=" + userId;
+    }
 }

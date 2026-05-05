@@ -26,18 +26,21 @@ public class InteractionResponse {
     private String notes;
     private Integer duration;
     private LocalDateTime interactionDate;
+    private Long contactId;
 
     public InteractionResponse(Long id,
                                String type,
                                String notes,
                                Integer duration,
-                               LocalDateTime interactionDate) {
+                               LocalDateTime interactionDate,
+                               Long contactId) {
 
         this.id = id;
         this.type = type;
         this.notes = notes;
         this.duration = duration;
         this.interactionDate = interactionDate;
+        this.contactId = contactId;
     }
 
     // getters
@@ -60,5 +63,9 @@ public class InteractionResponse {
 
     public LocalDateTime getInteractionDate() {
         return interactionDate;
+    }
+
+    public Long getContactId() {
+        return contactId;
     }
 }

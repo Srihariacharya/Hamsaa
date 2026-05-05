@@ -59,4 +59,10 @@ GROUP BY i.contact.id
     @org.springframework.transaction.annotation.Transactional
     @Query("DELETE FROM Interaction i WHERE i.contact.user.id = :userId AND i.duration > :maxDuration")
     void deleteCorruptedInteractions(Long userId, int maxDuration);
+
+    @Query("SELECT COUNT(DISTINCT i.contact.id) FROM Interaction i WHERE i.contact.user.id = :userId AND i.interactionDate >= :since")
+    long countActiveContactsSince(Long userId, LocalDateTime since);
+
+    @Query("SELECT SUM(i.duration) FROM Interaction i WHERE i.contact.user.id = :userId AND i.duration > 0")
+    Integer getTotalPickedDurationByUserId(Long userId);
 }

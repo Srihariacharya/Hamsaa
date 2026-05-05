@@ -27,13 +27,15 @@ public class AnalyticsService {
 
         // 1. Basic Counts
         long totalInteractions = interactionRepository.countByUserIdAndDurationGreaterThan(userId, 0);
-        Integer totalDuration = interactionRepository.getTotalDurationByUserId(userId);
+        Integer totalDuration = interactionRepository.getTotalPickedDurationByUserId(userId);
         long totalTasks = taskRepository.countByUserId(userId);
         long completedTasks = taskRepository.countByUserIdAndStatus(userId, "completed");
-        long activeContacts = contactRepository.countByUserId(userId);
+        long totalContacts = contactRepository.countByUserId(userId);
+        long activeContacts = interactionRepository.countActiveContactsSince(
+            userId, java.time.LocalDateTime.now().minusDays(30));
 
         response.setTotalInteractions(totalInteractions);
-        response.setAvgDuration(totalDuration != null ? (double) totalDuration / 60.0 : 0.0); // Now represents Total Minutes
+        response.setAvgDuration(totalDuration != null ? (double) totalDuration / 60.0 : 0.0); // Total Minutes
         response.setTaskCompletionRate(totalTasks > 0 ? (double) completedTasks / totalTasks * 100 : 0);
         response.setActiveContacts(activeContacts);
 

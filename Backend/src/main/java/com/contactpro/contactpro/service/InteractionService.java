@@ -75,7 +75,8 @@ public class InteractionService {
                 saved.getType(),
                 saved.getNotes(),
                 saved.getDuration(),
-                saved.getInteractionDate()
+                saved.getInteractionDate(),
+                saved.getContact().getId()
         );
     }
 
@@ -93,7 +94,8 @@ public class InteractionService {
                         i.getType(),
                         i.getNotes(),
                         i.getDuration(),
-                        i.getInteractionDate()
+                        i.getInteractionDate(),
+                        i.getContact().getId()
                 ))
                 .collect(Collectors.toList());
     }
@@ -106,7 +108,8 @@ public class InteractionService {
                         i.getType(),
                         i.getNotes(),
                         i.getDuration(),
-                        i.getInteractionDate()
+                        i.getInteractionDate(),
+                        i.getContact().getId()
                 ))
                 .collect(Collectors.toList());
     }
