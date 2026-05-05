@@ -285,7 +285,8 @@ fun CallLogImportTab(userId: Long, vm: ImportViewModel) {
                                 )
                                 Spacer(Modifier.width(16.dp))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(log.name ?: log.number, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                                    val displayName = log.name.takeIf { !it.isNullOrBlank() } ?: log.number
+                                    Text(displayName, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                                     Text(SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()).format(Date(log.date)), 
                                         style = MaterialTheme.typography.labelSmall, color = TextSecondary)
                                 }
