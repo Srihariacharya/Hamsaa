@@ -24,6 +24,7 @@ data class ContactResponse(
     val category: String?,
     val gender: String?,
     val dob: String?,
+    val notes: String?,
     val followUpFrequency: Int,
     val lastInteractionDate: String?,
     @SerializedName("blocked")

@@ -56,6 +56,7 @@ public class ContactService {
                 contact.getCategory(),
                 contact.getGender(),
                 contact.getDob(),
+                contact.getNotes(),
                 contact.getFollowUpFrequency(),
                 lastDate,
                 contact.isBlocked(),

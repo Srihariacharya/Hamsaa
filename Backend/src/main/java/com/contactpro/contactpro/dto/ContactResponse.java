@@ -10,6 +10,7 @@ public class ContactResponse {
     private String category;
     private String gender;
     private String dob;
+    private String notes;
     private int followUpFrequency;
     private LocalDateTime lastInteractionDate;
     private boolean isBlocked;
@@ -24,6 +25,7 @@ public class ContactResponse {
             String category,
             String gender,
             String dob,
+            String notes,
             int followUpFrequency,
             LocalDateTime lastInteractionDate,
             boolean isBlocked,
@@ -36,6 +38,7 @@ public class ContactResponse {
         this.category = category;
         this.gender = gender;
         this.dob = dob;
+        this.notes = notes;
         this.followUpFrequency = followUpFrequency;
         this.lastInteractionDate = lastInteractionDate;
         this.isBlocked = isBlocked;
@@ -50,6 +53,7 @@ public class ContactResponse {
     public String getCategory() { return category; }
     public String getGender() { return gender; }
     public String getDob() { return dob; }
+    public String getNotes() { return notes; }
     public int getFollowUpFrequency() { return followUpFrequency; }
     public LocalDateTime getLastInteractionDate() { return lastInteractionDate; }
     public boolean isBlocked() { return isBlocked; }
