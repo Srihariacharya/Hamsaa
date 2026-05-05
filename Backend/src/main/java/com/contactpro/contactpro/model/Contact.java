@@ -7,7 +7,11 @@ import java.time.LocalDateTime;
  * @Entity → tells Hibernate this is a database table
  */
 @Entity
-@Table(name = "contacts")
+@Table(name = "contacts", indexes = {
+    @Index(name = "idx_contact_user", columnList = "user_id"),
+    @Index(name = "idx_contact_phone", columnList = "phone"),
+    @Index(name = "idx_contact_name", columnList = "name")
+})
 public class Contact {
 
     @Id

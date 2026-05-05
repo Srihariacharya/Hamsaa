@@ -8,10 +8,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 
+import jakarta.persistence.Index;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "interactions")
+@Table(name = "interactions", indexes = {
+    @Index(name = "idx_interaction_contact", columnList = "contact_id"),
+    @Index(name = "idx_interaction_date", columnList = "interactionDate")
+})
 public class Interaction {
 
     @Id
