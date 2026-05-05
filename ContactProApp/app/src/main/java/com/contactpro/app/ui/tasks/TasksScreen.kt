@@ -16,17 +16,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.contactpro.app.TaskNotificationHelper
 import com.contactpro.app.data.local.TaskEntity
 import com.contactpro.app.network.ApiResult
 import com.contactpro.app.ui.components.*
 import com.contactpro.app.ui.theme.*
 import com.contactpro.app.viewmodel.TaskViewModel
 import com.contactpro.app.model.ContactResponse
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,8 +43,10 @@ fun TasksScreen(
     val tasks by vm.getTasks(userId).collectAsState(initial = emptyList())
     val contactsResult by contactVm.contacts.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     LaunchedEffect(userId) { contactVm.loadContacts(userId) }
+    LaunchedEffect(Unit) { TaskNotificationHelper.createChannel(context) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -80,7 +87,14 @@ fun TasksScreen(
                         val res = contactsResult
                         val contacts = if (res is ApiResult.Success) res.data else emptyList<ContactResponse>()
                         val contactName = contacts.find { it.id == task.contactId }?.name
-                        TaskCard(task, contactName, onToggle = { vm.toggleTaskCompletion(task) }, onDelete = { vm.deleteTask(task) })
+                        TaskCard(
+                            task, contactName,
+                            onToggle = { vm.toggleTaskCompletion(task) },
+                            onDelete = {
+                                TaskNotificationHelper.cancelNotification(context, task.id)
+                                vm.deleteTask(task)
+                            }
+                        )
                     }
                 }
             }
@@ -92,8 +106,24 @@ fun TasksScreen(
             AddTaskDialog(
                 contacts = contacts,
                 onDismiss = { showAddDialog = false },
-                onAdd = { title, desc, cId ->
-                    vm.addTask(TaskEntity(title = title, description = desc, dueDate = null, priority = "MEDIUM", status = "PENDING", contactId = cId, userId = userId))
+                onAdd = { title, desc, cId, dueDate ->
+                    val task = TaskEntity(
+                        title = title,
+                        description = desc,
+                        dueDate = dueDate,
+                        priority = "MEDIUM",
+                        status = "PENDING",
+                        contactId = cId,
+                        userId = userId
+                    )
+                    vm.addTask(task)
+
+                    // Schedule notification if due date is set
+                    if (dueDate != null) {
+                        TaskNotificationHelper.scheduleNotification(
+                            context, task.createdAt, title, dueDate
+                        )
+                    }
                     showAddDialog = false
                 }
             )
@@ -149,6 +179,25 @@ private fun TaskCard(task: TaskEntity, contactName: String?, onToggle: () -> Uni
                         )
                     }
                 }
+
+                // Show due date
+                if (!task.dueDate.isNullOrBlank()) {
+                    Spacer(Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Outlined.CalendarToday, null,
+                            tint = if (isDueDateOverdue(task.dueDate)) Error else Info,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            formatDueDate(task.dueDate),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (isDueDateOverdue(task.dueDate)) Error else Info,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
             }
             IconButton(onClick = onDelete) {
                 Icon(Icons.Outlined.Delete, null, tint = Error.copy(alpha = 0.6f), modifier = Modifier.size(20.dp))
@@ -157,17 +206,70 @@ private fun TaskCard(task: TaskEntity, contactName: String?, onToggle: () -> Uni
     }
 }
 
+private fun isDueDateOverdue(dueDateStr: String): Boolean {
+    return try {
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val dueDate = sdf.parse(dueDateStr) ?: return false
+        dueDate.before(java.util.Date())
+    } catch (e: Exception) { false }
+}
+
+private fun formatDueDate(dueDateStr: String): String {
+    return try {
+        val inputSdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val outputSdf = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+        val date = inputSdf.parse(dueDateStr) ?: return dueDateStr
+        
+        // Check if today
+        val todaySdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val today = todaySdf.format(java.util.Date())
+        val tomorrow = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, 1) }
+        val tomorrowStr = todaySdf.format(tomorrow.time)
+        
+        when (dueDateStr) {
+            today -> "Due Today"
+            tomorrowStr -> "Due Tomorrow"
+            else -> "Due: ${outputSdf.format(date)}"
+        }
+    } catch (e: Exception) { dueDateStr }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddTaskDialog(
     contacts: List<com.contactpro.app.model.ContactResponse>,
     onDismiss: () -> Unit, 
-    onAdd: (String, String, Long?) -> Unit
+    onAdd: (String, String, Long?, String?) -> Unit
 ) {
     var title by remember { mutableStateOf("") }
     var desc by remember { mutableStateOf("") }
     var selectedContactId by remember { mutableStateOf<Long?>(null) }
     var expanded by remember { mutableStateOf(false) }
+    var selectedDate by remember { mutableStateOf<String?>(null) }
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    // Date Picker state
+    val datePickerState = rememberDatePickerState()
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                        selectedDate = sdf.format(java.util.Date(millis))
+                    }
+                    showDatePicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -177,6 +279,34 @@ private fun AddTaskDialog(
                 InputField(title, { title = it }, "Task Title")
                 InputField(desc, { desc = it }, "Description (Optional)", singleLine = false, maxLines = 3)
                 
+                // Date Picker Field
+                OutlinedTextField(
+                    value = if (selectedDate != null) formatDueDate(selectedDate!!) else "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Due Date") },
+                    placeholder = { Text("Select a due date") },
+                    leadingIcon = { Icon(Icons.Outlined.CalendarToday, null, tint = HamsaaPrimary) },
+                    trailingIcon = {
+                        if (selectedDate != null) {
+                            IconButton(onClick = { selectedDate = null }) {
+                                Icon(Icons.Outlined.Close, "Clear", tint = TextHint, modifier = Modifier.size(18.dp))
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true },
+                    enabled = false,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledBorderColor = LightBorder,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledLeadingIconColor = HamsaaPrimary,
+                        disabledPlaceholderColor = TextHint
+                    )
+                )
+
+                // Contact dropdown
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = { expanded = it }
@@ -208,7 +338,7 @@ private fun AddTaskDialog(
             }
         },
         confirmButton = {
-            PrimaryButton(text = "Add", onClick = { if (title.isNotBlank()) onAdd(title, desc, selectedContactId) })
+            PrimaryButton(text = "Add", onClick = { if (title.isNotBlank()) onAdd(title, desc, selectedContactId, selectedDate) })
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
