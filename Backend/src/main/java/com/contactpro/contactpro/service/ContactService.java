@@ -99,7 +99,7 @@ public class ContactService {
         contact.setEmail(request.getEmail());
         contact.setCategory(request.getCategory());
         contact.setNotes(request.getNotes());
-        contact.setGender(request.getGender());
+        contact.setGender(request.getGender() != null ? request.getGender() : com.contactpro.contactpro.util.GenderPredictor.predict(request.getName()));
         contact.setDob(request.getDob());
         contact.setFollowUpFrequency(request.getFollowUpFrequency() > 0 ? request.getFollowUpFrequency() : 30);
         contact.setUser(user);
@@ -144,7 +144,7 @@ public class ContactService {
             contact.setEmail(request.getEmail());
             contact.setCategory(request.getCategory());
             contact.setNotes(request.getNotes());
-            contact.setGender(request.getGender());
+            contact.setGender(request.getGender() != null ? request.getGender() : com.contactpro.contactpro.util.GenderPredictor.predict(request.getName()));
             contact.setDob(request.getDob());
             contact.setFollowUpFrequency(request.getFollowUpFrequency() > 0 ? request.getFollowUpFrequency() : 30);
             contact.setUser(user);
@@ -250,6 +250,7 @@ public class ContactService {
                 if (!vcard.getEmails().isEmpty()) {
                     contact.setEmail(vcard.getEmails().get(0).getValue());
                 }
+                contact.setGender(com.contactpro.contactpro.util.GenderPredictor.predict(contact.getName()));
                 contact.setUser(user);
                 contactRepository.save(contact);
             }
