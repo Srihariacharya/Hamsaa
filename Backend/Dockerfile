@@ -9,5 +9,6 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 COPY --from=build /app/target/contactpro-0.0.1-SNAPSHOT.jar app.jar
+ENV JAVA_TOOL_OPTIONS="-Xmx256m -Xss512k"
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
